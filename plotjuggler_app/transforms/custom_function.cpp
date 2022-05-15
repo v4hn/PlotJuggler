@@ -15,7 +15,6 @@ void CustomFunction::setSnippet(const SnippetData& snippet)
 {
   _snippet = snippet;
   _linked_plot_name = snippet.linked_source.toStdString();
-  _plot_name = snippet.alias_name.toStdString();
 
   _used_channels.clear();
   for (QString source : snippet.additional_sources)
@@ -28,37 +27,6 @@ void CustomFunction::reset()
 {
   // This cause a crash during streaming for reasons that are not 100% clear.
   // initEngine();
-}
-
-void CustomFunction::calculateAndAdd(PlotDataMapRef& src_data)
-{
-  bool newly_added = false;
-
-  auto dst_data_it = src_data.numeric.find(_plot_name);
-  if (dst_data_it == src_data.numeric.end())
-  {
-    dst_data_it = src_data.addNumeric(_plot_name);
-    newly_added = true;
-  }
-
-  PlotData& dst_data = dst_data_it->second;
-  std::vector<PlotData*> dst_vector = { &dst_data };
-  dst_data.clear();
-
-  setData(&src_data, {}, dst_vector);
-
-  try
-  {
-    calculate();
-  }
-  catch (...)
-  {
-    if (newly_added)
-    {
-      plotData()->numeric.erase(dst_data_it);
-    }
-    std::rethrow_exception(std::current_exception());
-  }
 }
 
 const SnippetData& CustomFunction::snippet() const

@@ -64,6 +64,8 @@ public:
     return _order;
   }
 
+  void calculateAndAdd(const QString &plot_name, PlotDataMapRef& src_data);
+
 signals:
   void parametersChanged();
 

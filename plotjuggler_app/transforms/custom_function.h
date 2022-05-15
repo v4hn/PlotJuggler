@@ -73,8 +73,6 @@ public:
 
   virtual void initEngine() = 0;
 
-  void calculateAndAdd(PlotDataMapRef& src_data);
-
   virtual void calculatePoints(const std::vector<const PlotData*>& src_data,
                                size_t point_index,
                                std::vector<PlotData::Point>& new_points) = 0;
@@ -82,7 +80,6 @@ public:
 protected:
   SnippetData _snippet;
   std::string _linked_plot_name;
-  std::string _plot_name;
 
   std::vector<std::string> _used_channels;
 };

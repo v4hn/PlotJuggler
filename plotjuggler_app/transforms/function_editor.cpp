@@ -646,7 +646,7 @@ void FunctionEditorWidget::on_pushButtonCreate_clicked()
       }
     }
 
-    accept(created_plots);
+    emit accept(created_plots);
     saveSettings();
   }
   catch (const std::runtime_error& e)

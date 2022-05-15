@@ -264,3 +264,8 @@ void DialogTransformEditor::on_lineEditAlias_editingFinished()
 
   _plotwidget->replot();
 }
+
+void DialogTransformEditor::on_pushButtonCreateNew_clicked()
+{
+
+}

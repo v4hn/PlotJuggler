@@ -2100,10 +2100,10 @@ bool MainWindow::loadLayoutFromFile(QString filename)
         CustomPlotPtr new_custom_plot = std::make_shared<LuaCustomFunction>(snippet);
         new_custom_plot->xmlLoadState(custom_eq);
 
-        new_custom_plot->calculateAndAdd(_mapped_plot_data);
         const auto& alias_name = new_custom_plot->aliasName();
-        _curvelist_widget->addCustom(alias_name);
 
+        new_custom_plot->calculateAndAdd(alias_name, _mapped_plot_data);
+        _curvelist_widget->addCustom(alias_name);
         _transform_functions.insert({ alias_name.toStdString(), new_custom_plot });
       }
       catch (std::runtime_error& err)
@@ -2597,7 +2597,7 @@ void MainWindow::onRefreshCustomPlot(const std::string& plot_name)
       return;
     }
     CustomPlotPtr ce = std::dynamic_pointer_cast<LuaCustomFunction>(custom_it->second);
-    ce->calculateAndAdd(_mapped_plot_data);
+    ce->calculateAndAdd(ce->aliasName(), _mapped_plot_data);
 
     onUpdateLeftTableValues();
     updateDataAndReplot(true);
@@ -2660,7 +2660,7 @@ void MainWindow::onCustomPlotCreated(std::vector<CustomPlotPtr> custom_plots)
     }
     try
     {
-      custom_plot->calculateAndAdd(_mapped_plot_data);
+      custom_plot->calculateAndAdd(custom_plot->aliasName(), _mapped_plot_data);
     }
     catch (std::exception& ex)
     {

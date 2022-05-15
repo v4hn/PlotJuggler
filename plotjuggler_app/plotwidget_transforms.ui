@@ -290,7 +290,14 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Save</string>
+        <string>Accept</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonCreateNew">
+       <property name="text">
+        <string>Create New Curves</string>
        </property>
       </widget>
      </item>

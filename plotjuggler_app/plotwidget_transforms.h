@@ -29,6 +29,8 @@ private slots:
 
   void on_lineEditAlias_editingFinished();
 
+  void on_pushButtonCreateNew_clicked();
+
 private:
   Ui::plotwidget_transforms* ui;
 
@@ -51,6 +53,7 @@ private:
     QLabel* _text;
     QColor _color;
   };
+
 };
 
 #endif  // PLOTWIDGET_TRANSFORMS_H

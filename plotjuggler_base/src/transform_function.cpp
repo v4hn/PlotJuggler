@@ -32,6 +32,38 @@ void TransformFunction::setData(PlotDataMapRef* data,
   _dst_vector = dst_vect;
 }
 
+void TransformFunction::calculateAndAdd(const QString& name, PlotDataMapRef &src_data)
+{
+  std::string plot_name = name.toStdString();
+  bool newly_added = false;
+
+  auto dst_data_it = src_data.numeric.find(plot_name);
+  if (dst_data_it == src_data.numeric.end())
+  {
+    dst_data_it = src_data.addNumeric(plot_name);
+    newly_added = true;
+  }
+
+  PlotData& dst_data = dst_data_it->second;
+  std::vector<PlotData*> dst_vector = { &dst_data };
+  dst_data.clear();
+
+  setData(&src_data, {}, dst_vector);
+
+  try
+  {
+    calculate();
+  }
+  catch (...)
+  {
+    if (newly_added)
+    {
+      plotData()->numeric.erase(dst_data_it);
+    }
+    std::rethrow_exception(std::current_exception());
+  }
+}
+
 void TransformFunction_SISO::reset()
 {
   _last_timestamp = std::numeric_limits<double>::lowest();
