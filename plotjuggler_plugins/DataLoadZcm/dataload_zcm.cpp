@@ -72,7 +72,7 @@ static int processInputLog(const string& logpath, function<void(const zcm::LogEv
         QProgressDialog progress_dialog;
         progress_dialog.setLabelText("Loading... please wait");
         progress_dialog.setWindowModality(Qt::ApplicationModal);
-        progress_dialog.setRange(0, logSize);
+        progress_dialog.setRange(0, 100);
         progress_dialog.setAutoClose(true);
         progress_dialog.setAutoReset(true);
         progress_dialog.show();
@@ -82,13 +82,12 @@ static int processInputLog(const string& logpath, function<void(const zcm::LogEv
         while (1) {
             offset = ftello(inlog.getFilePtr());
 
-            progress_dialog.setValue(offset);
-
             int percent = 100.0 * offset / (logSize == 0 ? 1 : logSize);
             if (percent != lastPrintPercent) {
                 cout << "\r" << "Percent Complete: " << percent << flush;
                 lastPrintPercent = percent;
 
+                progress_dialog.setValue(percent);
                 if (progress_dialog.wasCanceled()) {
                   interrupted = true;
                   break;
@@ -153,7 +152,7 @@ bool DataLoadZcm::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   if (info->plugin_config.hasChildNodes()) {
     xmlLoadState(info->plugin_config.firstChildElement());
   } else {
-    launchDialog(filepath, channels);
+    if (!launchDialog(filepath, channels)) return false;
   }
 
   zcm::TypeDb types(getenv("ZCMTYPES_PATH"));
