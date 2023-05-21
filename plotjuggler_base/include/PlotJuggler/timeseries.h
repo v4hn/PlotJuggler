@@ -87,8 +87,7 @@ private:
   {
     if(_max_range_x < std::numeric_limits<double>::max())
     {
-      auto const back_point_x = _points.back().x;
-      while (_points.size() > 2 && (back_point_x - _points.front().x) > _max_range_x)
+      while (_points.size() > 2 && (_points.back().x - _points.front().x) > _max_range_x)
       {
         this->popFront();
       }
