@@ -20,18 +20,20 @@ if(Zcm_FOUND)
     add_definitions(${QT_DEFINITIONS})
     add_definitions(-DQT_PLUGIN)
 
-    SET( SRC datastream_zcm.cpp )
+    QT5_WRAP_UI ( UI_SRC ../selectlistdialog.ui )
 
-    add_library(DataStreamZcm SHARED ${SRC} )
+    SET( SRC dataload_zcm.cpp )
 
-    target_link_libraries(DataStreamZcm
+    add_library(DataLoadZcm SHARED ${SRC} ${UI_SRC}  )
+
+    target_link_libraries(DataLoadZcm
         ${Qt5Widgets_LIBRARIES}
+        ${Qt5Xml_LIBRARIES}
         plotjuggler_base
         ${Zcm_LIBRARIES}
         )
 
-    install(TARGETS DataStreamZcm DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
+    install(TARGETS DataLoadZcm DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
 else()
-    message("[Zcm] not found. Skipping plugin DataStreamZcm.")
+    message("[Zcm] not found. Skipping plugin DataLoadZcm.")
 endif()
-
