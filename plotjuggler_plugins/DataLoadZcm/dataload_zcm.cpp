@@ -1,13 +1,16 @@
 #include "dataload_zcm.h"
 
-#include <QTextStream>
-#include <QFile>
-#include <QMessageBox>
+#include "QSyntaxStyle"
 #include <QDebug>
-#include <QWidget>
-#include <QSettings>
-#include <QProgressDialog>
+#include <QFile>
+#include <QInputDialog>
 #include <QMainWindow>
+#include <QMessageBox>
+#include <QProgressDialog>
+#include <QPushButton>
+#include <QSettings>
+#include <QTextStream>
+#include <QWidget>
 
 #include <iostream>
 
@@ -19,6 +22,19 @@ using namespace std;
 
 DataLoadZcm::DataLoadZcm()
 {
+  _dialog = new QDialog();
+  _ui = new Ui::DialogZcm();
+  _ui->setupUi(_dialog);
+
+  _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+  _ui->listWidgetSeries->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+  connect(_ui->listWidgetSeries, &QListWidget::itemSelectionChanged, this, [this]() {
+    auto selected = _ui->listWidgetSeries->selectionModel()->selectedIndexes();
+    bool box_enabled = selected.size() > 0;
+    _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(box_enabled);
+  });
 }
 
 DataLoadZcm::~DataLoadZcm()
@@ -78,9 +94,48 @@ static int processInputLog(const string& logpath, function<void(const zcm::LogEv
     return 0;
 }
 
-bool DataLoadZcm::readDataFromFile(FileLoadInfo* fileload_info,
-                                    PlotDataMapRef& plot_data)
+bool DataLoadZcm::launchDialog(const string& filepath, unordered_set<string>& channels)
 {
+  QSettings settings;
+  _dialog->restoreGeometry(settings.value("DataLoadZcm.geometry").toByteArray());
+
+  channels.clear();
+  auto processEvent = [&channels](const zcm::LogEvent* evt){
+    channels.insert(evt->channel);
+  };
+  if (processInputLog(filepath, processEvent) != 0) return false;
+
+  _ui->listWidgetSeries->clear();
+  for (auto& c : channels) {
+    _ui->listWidgetSeries->addItem(QString::fromStdString(c));
+  }
+
+  channels.clear();
+
+  int res = _dialog->exec();
+
+  settings.setValue("DataLoadZcm.geometry", _dialog->saveGeometry());
+
+  QModelIndexList indexes = _ui->listWidgetSeries->selectionModel()->selectedRows();
+  for (auto& i : indexes) {
+      auto item = _ui->listWidgetSeries->item(i.row());
+      channels.insert(item->text().toStdString());
+  }
+
+  return !indexes.empty();
+}
+
+bool DataLoadZcm::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
+{
+  string filepath = info->filename.toStdString();
+  unordered_set<string> channels;
+
+  if (info->plugin_config.hasChildNodes()) {
+    xmlLoadState(info->plugin_config.firstChildElement());
+  } else {
+    launchDialog(filepath, channels);
+  }
+
   zcm::TypeDb types(getenv("ZCMTYPES_PATH"));
   assert(types.good() && "Failed to load zcmtypes");
 
@@ -103,6 +158,7 @@ bool DataLoadZcm::readDataFromFile(FileLoadInfo* fileload_info,
   };
 
   auto processEvent = [&](const zcm::LogEvent* evt){
+      if (channels.find(evt->channel) == channels.end()) return;
       zcm::Introspection::processEncodedType(evt->channel,
                                              evt->data, evt->datalen,
                                              "/",
@@ -128,7 +184,7 @@ bool DataLoadZcm::readDataFromFile(FileLoadInfo* fileload_info,
       strings.clear();
   };
 
-  if (processInputLog(fileload_info->filename.toStdString(), processEvent) != 0)
+  if (processInputLog(filepath, processEvent) != 0)
       return false;
 
   return true;

@@ -4,7 +4,12 @@
 #include <QtPlugin>
 #include <QWidget>
 
+#include <string>
+#include <unordered_set>
+
 #include "PlotJuggler/dataloader_base.h"
+
+#include "ui_dataload_zcm.h"
 
 using namespace PJ;
 
@@ -29,4 +34,10 @@ public:
   bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
 
   bool xmlLoadState(const QDomElement& parent_element) override;
+
+private:
+  QDialog* _dialog;
+  Ui::DialogZcm* _ui;
+
+  bool launchDialog(const std::string& filepath, std::unordered_set<std::string>& channels);
 };

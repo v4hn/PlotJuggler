@@ -20,7 +20,10 @@ if(Zcm_FOUND)
     add_definitions(${QT_DEFINITIONS})
     add_definitions(-DQT_PLUGIN)
 
-    QT5_WRAP_UI ( UI_SRC ../selectlistdialog.ui )
+    QT5_WRAP_UI ( UI_SRC
+        ../selectlistdialog.ui
+        dataload_zcm.ui
+        )
 
     SET( SRC dataload_zcm.cpp )
 
