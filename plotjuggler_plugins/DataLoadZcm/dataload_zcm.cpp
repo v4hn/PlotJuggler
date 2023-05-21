@@ -69,13 +69,30 @@ static int processInputLog(const string& logpath, function<void(const zcm::LogEv
         off64_t logSize = ftello(inlog.getFilePtr());
         fseeko(inlog.getFilePtr(), 0, SEEK_SET);
 
+        QProgressDialog progress_dialog;
+        progress_dialog.setLabelText("Loading... please wait");
+        progress_dialog.setWindowModality(Qt::ApplicationModal);
+        progress_dialog.setRange(0, logSize);
+        progress_dialog.setAutoClose(true);
+        progress_dialog.setAutoReset(true);
+        progress_dialog.show();
+
+        bool interrupted = false;
+
         while (1) {
             offset = ftello(inlog.getFilePtr());
+
+            progress_dialog.setValue(offset);
 
             int percent = 100.0 * offset / (logSize == 0 ? 1 : logSize);
             if (percent != lastPrintPercent) {
                 cout << "\r" << "Percent Complete: " << percent << flush;
                 lastPrintPercent = percent;
+
+                if (progress_dialog.wasCanceled()) {
+                  interrupted = true;
+                  break;
+                }
             }
 
             evt = inlog.readNextEvent();
@@ -83,8 +100,11 @@ static int processInputLog(const string& logpath, function<void(const zcm::LogEv
 
             processEvent(evt);
         }
-        if (lastPrintPercent != 100) cout << "\r" << "Percent Complete: 100" << flush;
+        if (lastPrintPercent != 100 && !interrupted)
+            cout << "\r" << "Percent Complete: 100" << flush;
         cout << endl;
+
+        if (interrupted) progress_dialog.cancel();
     };
 
     processLog(processEvent);
