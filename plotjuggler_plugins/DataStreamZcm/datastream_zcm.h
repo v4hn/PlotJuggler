@@ -9,6 +9,8 @@
 #include <zcm/tools/TypeDb.hpp>
 #include <zcm/tools/Introspection.hpp>
 
+#include "ui_datastream_zcm.h"
+
 class DataStreamZcm : public PJ::DataStreamer
 {
   Q_OBJECT
@@ -38,7 +40,7 @@ private:
 
   std::unique_ptr<zcm::ZCM> _zcm;
 
-  zcm::Subscription* _subs;
+  zcm::Subscription* _subs = nullptr;
 
   zcm::Introspection::ProcessFn _processData;
 
@@ -48,4 +50,9 @@ private:
   void handler(const zcm::ReceiveBuffer* rbuf, const std::string& channel);
 
   bool _running;
+  QString _types_folder;
+  QString _subscribe_string;
+
+  QDialog* _dialog;
+  Ui::DialogZcm* _ui;
 };

@@ -15,14 +15,18 @@ if(Zcm_FOUND)
 
     message(STATUS "[Zcm] found")
 
-    include_directories(../ ${Zcm_INCLUDE_DIR})
+    include_directories( ${Zcm_INCLUDE_DIR})
 
     add_definitions(${QT_DEFINITIONS})
     add_definitions(-DQT_PLUGIN)
 
-    SET( SRC datastream_zcm.cpp )
+    QT5_WRAP_UI(UI_SRC datastream_zcm.ui  )
 
-    add_library(DataStreamZcm SHARED ${SRC} )
+    SET( SRC
+        datastream_zcm.h
+        datastream_zcm.cpp )
+
+    add_library(DataStreamZcm SHARED ${SRC} ${UI_SRC})
 
     target_link_libraries(DataStreamZcm
         ${Qt5Widgets_LIBRARIES}
