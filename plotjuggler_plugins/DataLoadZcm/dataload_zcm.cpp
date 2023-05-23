@@ -1,6 +1,5 @@
 #include "dataload_zcm.h"
 
-#include "QSyntaxStyle"
 #include <QDebug>
 #include <QFile>
 #include <QInputDialog>
@@ -11,6 +10,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QWidget>
+#include <QFileDialog>
 
 #include <iostream>
 
@@ -35,6 +35,31 @@ DataLoadZcm::DataLoadZcm()
     bool box_enabled = selected.size() > 0;
     _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(box_enabled);
   });
+
+  // When the "Select" button is pushed, open a file dialog to select
+  // a different folder
+  connect(_ui->buttonSelectFolder, &QPushButton::clicked, this,
+          [this](){
+            QString dir = QFileDialog::getExistingDirectory(
+                nullptr, tr("Select Directory"),
+                _ui->lineEditFolder->text(),
+                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+            // if valid, update lineEditFolder
+            if(!dir.isEmpty()) {
+              _ui->lineEditFolder->setText(dir);
+            }
+          });
+  // When the "Default" button is pushed, load from getenv("ZCMTYPES_PATH")
+  connect(_ui->buttonDefaultFolder, &QPushButton::clicked, this,
+          [this](){
+            QString folder = getenv("ZCMTYPES_PATH");
+            if(folder.isEmpty()){
+              QMessageBox::warning(nullptr, "Error", "Environment variable ZCMTYPES_PATH not set");
+            }
+            else {
+              _ui->lineEditFolder->setText(getenv("ZCMTYPES_PATH"));
+            }
+          });
 }
 
 DataLoadZcm::~DataLoadZcm()
@@ -52,7 +77,8 @@ const vector<const char*>& DataLoadZcm::compatibleFileExtensions() const
   return extensions;
 }
 
-static int processInputLog(const string& logpath, function<void(const zcm::LogEvent* evt)> processEvent)
+static int processInputLog(const string& logpath,
+                           function<void(const zcm::LogEvent* evt)> processEvent)
 {
     zcm::LogFile inlog(logpath, "r");
     if (!inlog.good()) {
@@ -122,7 +148,10 @@ bool DataLoadZcm::launchDialog(const string& filepath, unordered_set<string>& ch
   auto processEvent = [&channels](const zcm::LogEvent* evt){
     channels.insert(evt->channel);
   };
-  if (processInputLog(filepath, processEvent) != 0) return false;
+
+  if (processInputLog(filepath, processEvent) != 0) {
+    return false;
+  }
 
   _ui->listWidgetSeries->clear();
   for (auto& c : channels) {
@@ -132,8 +161,11 @@ bool DataLoadZcm::launchDialog(const string& filepath, unordered_set<string>& ch
   channels.clear();
 
   int res = _dialog->exec();
-
   settings.setValue("DataLoadZcm.geometry", _dialog->saveGeometry());
+
+  if (res == QDialog::Rejected) {
+    return false;
+  }
 
   QModelIndexList indexes = _ui->listWidgetSeries->selectionModel()->selectedRows();
   for (auto& i : indexes) {
@@ -157,7 +189,9 @@ bool DataLoadZcm::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   if (info->plugin_config.hasChildNodes()) {
     xmlLoadState(info->plugin_config.firstChildElement());
   } else {
-    if (!launchDialog(filepath, channels)) return false;
+    if (!launchDialog(filepath, channels)) {
+      return false;
+    }
   }
 
   zcm::TypeDb types(getenv("ZCMTYPES_PATH"));

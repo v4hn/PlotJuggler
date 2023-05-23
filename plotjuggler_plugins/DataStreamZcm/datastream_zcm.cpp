@@ -55,7 +55,7 @@ DataStreamZcm::DataStreamZcm(): _subs(nullptr), _running(false)
               _ui->lineEditFolder->setText(dir);
             }
           });
-  // When the "Select" button is pushed, load from getenv("ZCMTYPES_PATH")
+  // When the "Default" button is pushed, load from getenv("ZCMTYPES_PATH")
   connect(_ui->buttonDefaultFolder, &QPushButton::clicked, this,
           [this](){
             QString folder = getenv("ZCMTYPES_PATH");
