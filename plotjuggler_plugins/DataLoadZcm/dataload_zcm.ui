@@ -19,7 +19,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Folder where Zmc types are located: </string>
+        <string>Zmc type file: </string>
        </property>
       </widget>
      </item>

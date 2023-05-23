@@ -40,13 +40,12 @@ DataLoadZcm::DataLoadZcm()
   // a different folder
   connect(_ui->buttonSelectFolder, &QPushButton::clicked, this,
           [this](){
-            QString dir = QFileDialog::getExistingDirectory(
-                nullptr, tr("Select Directory"),
-                _ui->lineEditFolder->text(),
-                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+            QString filename = QFileDialog::getOpenFileName(
+                nullptr, tr("Select ZCM Type File"),
+                {}, "*.so");
             // if valid, update lineEditFolder
-            if(!dir.isEmpty()) {
-              _ui->lineEditFolder->setText(dir);
+            if(!filename.isEmpty()) {
+              _ui->lineEditFolder->setText(filename);
             }
           });
   // When the "Default" button is pushed, load from getenv("ZCMTYPES_PATH")
@@ -73,7 +72,7 @@ const char* DataLoadZcm::name() const
 
 const vector<const char*>& DataLoadZcm::compatibleFileExtensions() const
 {
-  static vector<const char*> extensions = { "log" };
+  static vector<const char*> extensions = { "zcmlog" };
   return extensions;
 }
 
@@ -144,6 +143,9 @@ bool DataLoadZcm::launchDialog(const string& filepath, unordered_set<string>& ch
   QSettings settings;
   _dialog->restoreGeometry(settings.value("DataLoadZcm.geometry").toByteArray());
 
+  auto type_path = settings.value("DataLoadZcm.folder", getenv("ZCMTYPES_PATH")).toString();
+  _ui->lineEditFolder->setText(type_path);
+
   channels.clear();
   auto processEvent = [&channels](const zcm::LogEvent* evt){
     channels.insert(evt->channel);
@@ -162,6 +164,7 @@ bool DataLoadZcm::launchDialog(const string& filepath, unordered_set<string>& ch
 
   int res = _dialog->exec();
   settings.setValue("DataLoadZcm.geometry", _dialog->saveGeometry());
+  settings.setValue("DataLoadZcm.folder", _ui->lineEditFolder->text());
 
   if (res == QDialog::Rejected) {
     return false;
@@ -194,8 +197,13 @@ bool DataLoadZcm::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     }
   }
 
-  zcm::TypeDb types(getenv("ZCMTYPES_PATH"));
-  assert(types.good() && "Failed to load zcmtypes");
+  auto type_path = _ui->lineEditFolder->text().toStdString();
+  zcm::TypeDb types(type_path);
+  if(!types.good())
+  {
+    QMessageBox::warning(nullptr, "Error", "Failed to load zcmtypes");
+    return false;
+  }
 
   vector<pair<string, double>> numerics;
   vector<pair<string, string>> strings;

@@ -46,14 +46,13 @@ DataStreamZcm::DataStreamZcm(): _subs(nullptr), _running(false)
   // a different folder
   connect(_ui->buttonSelectFolder, &QPushButton::clicked, this,
           [this](){
-            QString dir = QFileDialog::getExistingDirectory(
-                nullptr, tr("Select Directory"),
-                _ui->lineEditFolder->text(),
-                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-            // if valid, update lineEditFolder
-            if(!dir.isEmpty()) {
-              _ui->lineEditFolder->setText(dir);
-            }
+              QString filename = QFileDialog::getOpenFileName(
+                  nullptr, tr("Select ZCM Type File"),
+                  {}, "*.so");
+              // if valid, update lineEditFolder
+              if(!filename.isEmpty()) {
+                  _ui->lineEditFolder->setText(filename);
+              }
           });
   // When the "Default" button is pushed, load from getenv("ZCMTYPES_PATH")
   connect(_ui->buttonDefaultFolder, &QPushButton::clicked, this,
@@ -86,7 +85,8 @@ bool DataStreamZcm::start(QStringList*)
 
   // Initialize zmc here, only once if everything goes well
   if(!_zcm) {
-    _zcm.reset(new zcm::ZCM(""));
+    _zcm.reset(new zcm::ZCM("ipc"));
+
     if (!_zcm->good()) {
       QMessageBox::warning(nullptr, "Error", "Failed to create zcm::ZCM()");
       _zcm.reset();
@@ -111,6 +111,7 @@ bool DataStreamZcm::start(QStringList*)
   // start the dialog and check that OK was pressed
   _dialog->restoreGeometry(settings.value("DataStreamZcm::geometry").toByteArray());
   int res = _dialog->exec();
+
   settings.setValue("DataStreamZcm::geometry", _dialog->saveGeometry());
   if (res == QDialog::Rejected) {
     return false;
