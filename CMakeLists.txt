@@ -263,14 +263,12 @@ add_subdirectory( plotjuggler_plugins/DataLoadCSV )
 add_subdirectory( plotjuggler_plugins/DataLoadMCAP )
 add_subdirectory( plotjuggler_plugins/DataLoadParquet )
 add_subdirectory( plotjuggler_plugins/DataLoadULog )
-add_subdirectory( plotjuggler_plugins/DataLoadZcm )
 
 add_subdirectory( plotjuggler_plugins/DataStreamSample )
 add_subdirectory( plotjuggler_plugins/DataStreamWebsocket )
 add_subdirectory( plotjuggler_plugins/DataStreamUDP )
 add_subdirectory( plotjuggler_plugins/DataStreamMQTT )
 add_subdirectory( plotjuggler_plugins/DataStreamZMQ )
-add_subdirectory( plotjuggler_plugins/DataStreamZcm )
 
 add_subdirectory( plotjuggler_plugins/StatePublisherCSV )
 add_subdirectory( plotjuggler_plugins/VideoViewer )
@@ -282,6 +280,8 @@ add_subdirectory( plotjuggler_plugins/ToolboxLuaEditor )
 add_subdirectory( plotjuggler_plugins/ParserProtobuf )
 add_subdirectory( plotjuggler_plugins/ParserROS )
 add_subdirectory( plotjuggler_plugins/ParserDataTamer )
+
+add_subdirectory( plotjuggler_plugins/PluginsZcm )
 
 # Install targets
 

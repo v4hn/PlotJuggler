@@ -8,7 +8,7 @@
 #include <unordered_set>
 
 #include "PlotJuggler/dataloader_base.h"
-
+#include "config_zcm.h"
 #include "ui_dataload_zcm.h"
 
 using namespace PJ;
@@ -37,6 +37,7 @@ public:
 
 private:
   QDialog* _dialog;
+  ConfigZCM* _config_widget;
   Ui::DialogZcm* _ui;
 
   bool launchDialog(const std::string& filepath, std::unordered_set<std::string>& channels);

@@ -9,6 +9,7 @@
 #include <zcm/tools/TypeDb.hpp>
 #include <zcm/tools/Introspection.hpp>
 
+#include "config_zcm.h"
 #include "ui_datastream_zcm.h"
 
 class DataStreamZcm : public PJ::DataStreamer
@@ -35,7 +36,10 @@ public:
 
   virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
-private:
+  private slots:
+  void on_pushButtonUrl_clicked();
+
+  private:
   std::unique_ptr<zcm::TypeDb> _types;
 
   std::unique_ptr<zcm::ZCM> _zcm;
@@ -50,9 +54,11 @@ private:
   void handler(const zcm::ReceiveBuffer* rbuf, const std::string& channel);
 
   bool _running;
-  QString _types_folder;
+  QString _types_library;
   QString _subscribe_string;
+  QString _transport;
 
   QDialog* _dialog;
   Ui::DialogZcm* _ui;
+  ConfigZCM* _config_widget;
 };

@@ -42,34 +42,14 @@ DataStreamZcm::DataStreamZcm(): _subs(nullptr), _running(false)
   _ui = new Ui::DialogZcm;
   _ui->setupUi(_dialog);
 
-  // When the "Select" button is pushed, open a file dialog to select
-  // a different folder
-  connect(_ui->buttonSelectFolder, &QPushButton::clicked, this,
-          [this](){
-              QString filename = QFileDialog::getOpenFileName(
-                  nullptr, tr("Select ZCM Type File"),
-                  {}, "*.so");
-              // if valid, update lineEditFolder
-              if(!filename.isEmpty()) {
-                  _ui->lineEditFolder->setText(filename);
-              }
-          });
-  // When the "Default" button is pushed, load from getenv("ZCMTYPES_PATH")
-  connect(_ui->buttonDefaultFolder, &QPushButton::clicked, this,
-          [this](){
-            QString folder = getenv("ZCMTYPES_PATH");
-            if(folder.isEmpty()){
-              QMessageBox::warning(nullptr, "Error", "Environment variable ZCMTYPES_PATH not set");
-            }
-            else {
-              _ui->lineEditFolder->setText(getenv("ZCMTYPES_PATH"));
-            }
-          });
+  _config_widget = new ConfigZCM("DataStreamZcm", _dialog);
+  _ui->mainLayout->insertWidget(5, _config_widget, 1);
 }
 
 DataStreamZcm::~DataStreamZcm()
 {
   shutdown();
+  delete _dialog;
 }
 
 const char* DataStreamZcm::name() const
@@ -83,30 +63,19 @@ bool DataStreamZcm::start(QStringList*)
     return false;
   }
 
-  // Initialize zmc here, only once if everything goes well
-  if(!_zcm) {
-    _zcm.reset(new zcm::ZCM("ipc"));
-
-    if (!_zcm->good()) {
-      QMessageBox::warning(nullptr, "Error", "Failed to create zcm::ZCM()");
-      _zcm.reset();
-      _subs = nullptr;
-      // QUESTION: to we need to call first "delete _subs" ?
-      // Who have the ownership of that pointer?
-      return false;
-    }
-  }
-
   // We create a Dialog to request the folder to populate zcm::TypeDb
   // and the string to pass to the subscriber.
 
   // Initialize the lineEdits in the ui with the previous value;
   QSettings settings;
-  auto const prev_folder = settings.value("DataStreamZcm::folder",
-                                          getenv("ZCMTYPES_PATH")).toString();
-  _ui->lineEditFolder->setText(prev_folder);
   auto const subscribe_text = settings.value("DataStreamZcm::subscribe", ".*").toString();
   _ui->lineEditSubscribe->setText(subscribe_text);
+
+  {
+    auto transport = QString(getenv("PJ_ZCM_DEFAULT_URL"));
+    transport = settings.value("DataStreamZcm::transport", transport).toString();
+    _ui->lineEditTransport->setText(transport);
+  }
 
   // start the dialog and check that OK was pressed
   _dialog->restoreGeometry(settings.value("DataStreamZcm::geometry").toByteArray());
@@ -118,14 +87,34 @@ bool DataStreamZcm::start(QStringList*)
   }
 
   // save the current configuration for the next execution
-  settings.setValue("DataStreamZcm::folder", _ui->lineEditFolder->text());
   settings.setValue("DataStreamZcm::subscribe", _ui->lineEditSubscribe->text());
+  settings.setValue("DataStreamZcm::transport", _ui->lineEditTransport->text());
+
+  _transport = _ui->lineEditTransport->text();
+
+  if(!_zcm) {
+    try {
+        _zcm.reset(new zcm::ZCM(_transport.toStdString()));
+    }
+    catch(std::exception& ex) {
+        QMessageBox::warning(nullptr, "Error",
+                             tr("Exception from zcm::ZCM() :\n%1").arg(ex.what()));
+        return false;
+    }
+    if (!_zcm->good()) {
+        QMessageBox::warning(nullptr, "Error", "Failed to create zcm::ZCM()");
+        _zcm.reset();
+        return false;
+    }
+  }
+
+  auto libraries = _config_widget->getLibraries();
 
   // reset the types if it is the first time or folder changed
-  if(_types_folder != _ui->lineEditFolder->text() || !_types)
+  if(_types_library != libraries || !_types)
   {
-    _types_folder = _ui->lineEditFolder->text();
-    _types.reset(new zcm::TypeDb(_types_folder.toStdString()));
+    _types_library = libraries;
+    _types.reset(new zcm::TypeDb(_types_library.toStdString()));
     if(!_types->good()) {
       QMessageBox::warning(nullptr, "Error", "Failed to create zcm::TypeDb()");
       _types.reset();
@@ -136,10 +125,12 @@ bool DataStreamZcm::start(QStringList*)
   if(_subscribe_string != _ui->lineEditSubscribe->text() || !_subs)
   {
     _subscribe_string = _ui->lineEditSubscribe->text();
+    if (_subs) {
+      _zcm->unsubscribe(_subs);
+    }
     _subs =_zcm->subscribe(_subscribe_string.toStdString(), &DataStreamZcm::handler, this);
-    if (!_zcm->good()) {
-      QMessageBox::warning(nullptr, "Error", "Failed to create zcm::TypeDb()");
-      // QUESTION: is there any cleanup that need to be done here?
+    if (!_subs) {
+      QMessageBox::warning(nullptr, "Error", "Failed to subscribe");
       return false;
     }
   }
@@ -154,7 +145,12 @@ void DataStreamZcm::shutdown()
   if (!_running) {
     return;
   }
+  if (_subs) {
+    _zcm->unsubscribe(_subs);
+    _subs = nullptr;
+  }
   _zcm->stop();
+  _zcm.reset(nullptr);
   _running = false;
 }
 
@@ -165,9 +161,11 @@ bool DataStreamZcm::isRunning() const
 
 bool DataStreamZcm::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const
 {
+  // RRR (Bendes): Probably also transport string here
   QDomElement elem = doc.createElement("config");
-  elem.setAttribute("folder", _types_folder);
+  elem.setAttribute("folder", _types_library);
   elem.setAttribute("subscribe", _subscribe_string);
+  elem.setAttribute("transport", _transport);
   parent_element.appendChild(elem);
   return true;
 }
@@ -177,11 +175,14 @@ bool DataStreamZcm::xmlLoadState(const QDomElement& parent_element)
   QDomElement elem = parent_element.firstChildElement("config");
   if (!elem.isNull())
   {
-    _types_folder = elem.attribute("folder");
+    // RRR (Bendes): Probably also transport string here
+    _types_library = elem.attribute("folder");
     _subscribe_string = elem.attribute("subscribe");
+    _transport = elem.attribute("transport");
     QSettings settings;
-    settings.setValue("DataStreamZcm::folder", _types_folder);
+    settings.setValue("DataStreamZcm::folder", _types_library);
     settings.setValue("DataStreamZcm::subscribe", _subscribe_string);
+    settings.setValue("DataStreamZcm::transport", _transport);
   }
   return true;
 }
@@ -216,3 +217,14 @@ void DataStreamZcm::handler(const zcm::ReceiveBuffer* rbuf, const string& channe
   _numerics.clear();
   _strings.clear();
 }
+
+void DataStreamZcm::on_pushButtonUrl_clicked()
+{
+  QString url = getenv("PJ_ZCM_DEFAULT_URL");
+  if (url.isEmpty()) {
+    QMessageBox::warning(nullptr, "Error", "Environment variable PJ_ZCM_DEFAULT_URL not set");
+  } else {
+    _ui->lineEditTransport->setText(url);
+  }
+}
+

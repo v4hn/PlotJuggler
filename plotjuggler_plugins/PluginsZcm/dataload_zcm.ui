@@ -13,47 +13,16 @@
   <property name="windowTitle">
    <string>Zcm Loader</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,1,0">
+  <layout class="QVBoxLayout" name="mainLayout" stretch="0,1,0">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Zmc type file: </string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="buttonDefaultFolder">
-       <property name="text">
-        <string>Default</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="buttonSelectFolder">
-       <property name="text">
-        <string>Select</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="lineEditFolder"/>
+    <widget class="Line" name="line">
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QSplitter" name="splitter">
@@ -73,7 +42,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="listWidgetSeries"/>
+        <widget class="QListWidget" name="listWidgetChannels"/>
        </item>
       </layout>
      </widget>

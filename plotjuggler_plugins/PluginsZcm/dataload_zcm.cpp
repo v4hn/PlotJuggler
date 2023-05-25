@@ -15,7 +15,6 @@
 #include <iostream>
 
 #include <zcm/zcm-cpp.hpp>
-
 #include <zcm/tools/Introspection.hpp>
 
 using namespace std;
@@ -26,43 +25,23 @@ DataLoadZcm::DataLoadZcm()
   _ui = new Ui::DialogZcm();
   _ui->setupUi(_dialog);
 
+  _config_widget = new ConfigZCM("DataLoadZcm", _dialog);
+  _ui->mainLayout->insertWidget(0, _config_widget, 1);
+
   _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
-  _ui->listWidgetSeries->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  _ui->listWidgetChannels->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-  connect(_ui->listWidgetSeries, &QListWidget::itemSelectionChanged, this, [this]() {
-    auto selected = _ui->listWidgetSeries->selectionModel()->selectedIndexes();
+  connect(_ui->listWidgetChannels, &QListWidget::itemSelectionChanged, this, [this]() {
+      auto selected = _ui->listWidgetChannels->selectionModel()->selectedIndexes();
     bool box_enabled = selected.size() > 0;
     _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(box_enabled);
   });
-
-  // When the "Select" button is pushed, open a file dialog to select
-  // a different folder
-  connect(_ui->buttonSelectFolder, &QPushButton::clicked, this,
-          [this](){
-            QString filename = QFileDialog::getOpenFileName(
-                nullptr, tr("Select ZCM Type File"),
-                {}, "*.so");
-            // if valid, update lineEditFolder
-            if(!filename.isEmpty()) {
-              _ui->lineEditFolder->setText(filename);
-            }
-          });
-  // When the "Default" button is pushed, load from getenv("ZCMTYPES_PATH")
-  connect(_ui->buttonDefaultFolder, &QPushButton::clicked, this,
-          [this](){
-            QString folder = getenv("ZCMTYPES_PATH");
-            if(folder.isEmpty()){
-              QMessageBox::warning(nullptr, "Error", "Environment variable ZCMTYPES_PATH not set");
-            }
-            else {
-              _ui->lineEditFolder->setText(getenv("ZCMTYPES_PATH"));
-            }
-          });
 }
 
 DataLoadZcm::~DataLoadZcm()
 {
+  delete _dialog;
 }
 
 const char* DataLoadZcm::name() const
@@ -143,38 +122,49 @@ bool DataLoadZcm::launchDialog(const string& filepath, unordered_set<string>& ch
   QSettings settings;
   _dialog->restoreGeometry(settings.value("DataLoadZcm.geometry").toByteArray());
 
-  auto type_path = settings.value("DataLoadZcm.folder", getenv("ZCMTYPES_PATH")).toString();
-  _ui->lineEditFolder->setText(type_path);
 
   channels.clear();
   auto processEvent = [&channels](const zcm::LogEvent* evt){
     channels.insert(evt->channel);
   };
 
+
   if (processInputLog(filepath, processEvent) != 0) {
     return false;
   }
 
-  _ui->listWidgetSeries->clear();
+  _ui->listWidgetChannels->clear();
   for (auto& c : channels) {
-    _ui->listWidgetSeries->addItem(QString::fromStdString(c));
+    auto chan = QString::fromStdString(c);
+    _ui->listWidgetChannels->addItem(chan);
   }
+  _ui->listWidgetChannels->sortItems();
 
+  auto selected_channels = settings.value("DataLoadZcm.selected_channels").toStringList();
+  for (int row = 0; row<_ui->listWidgetChannels->count(); row++) {
+    auto item = _ui->listWidgetChannels->item(row);
+    if(selected_channels.contains(item->text())) {
+        item->setSelected(true);
+    }
+  }
   channels.clear();
+  selected_channels.clear();
 
   int res = _dialog->exec();
   settings.setValue("DataLoadZcm.geometry", _dialog->saveGeometry());
-  settings.setValue("DataLoadZcm.folder", _ui->lineEditFolder->text());
 
   if (res == QDialog::Rejected) {
     return false;
   }
 
-  QModelIndexList indexes = _ui->listWidgetSeries->selectionModel()->selectedRows();
+  QModelIndexList indexes = _ui->listWidgetChannels->selectionModel()->selectedRows();
   for (auto& i : indexes) {
-      auto item = _ui->listWidgetSeries->item(i.row());
-      channels.insert(item->text().toStdString());
+    auto item = _ui->listWidgetChannels->item(i.row());
+    channels.insert(item->text().toStdString());
+    selected_channels.push_back(item->text());
   }
+
+  settings.setValue("DataLoadZcm.selected_channels", selected_channels);
 
   return !indexes.empty();
 }
@@ -197,8 +187,7 @@ bool DataLoadZcm::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     }
   }
 
-  auto type_path = _ui->lineEditFolder->text().toStdString();
-  zcm::TypeDb types(type_path);
+  zcm::TypeDb types(_config_widget->getLibraries().toStdString());
   if(!types.good())
   {
     QMessageBox::warning(nullptr, "Error", "Failed to load zcmtypes");
