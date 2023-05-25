@@ -128,7 +128,6 @@ bool DataLoadZcm::launchDialog(const string& filepath, unordered_set<string>& ch
     channels.insert(evt->channel);
   };
 
-
   if (processInputLog(filepath, processEvent) != 0) {
     return false;
   }
@@ -218,12 +217,6 @@ bool DataLoadZcm::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
                                              evt->data, evt->datalen,
                                              "/",
                                              types, processData);
-
-      /*
-      for (auto& n : numerics) cout << setprecision(10) << n.first << "," << n.second << endl;
-      for (auto& s : strings) cout << s.first << "," << s.second << endl;
-      */
-
       for (auto& n : numerics) {
           auto itr = plot_data.numeric.find(n.first);
           if (itr == plot_data.numeric.end()) itr = plot_data.addNumeric(n.first);
