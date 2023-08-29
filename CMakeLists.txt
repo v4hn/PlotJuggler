@@ -283,6 +283,7 @@ add_subdirectory( plotjuggler_plugins/ParserROS )
 add_subdirectory( plotjuggler_plugins/ParserDataTamer )
 
 add_subdirectory( plotjuggler_plugins/PluginsZcm )
+add_subdirectory( plotjuggler_plugins/ToolboxRemote )
 
 # Install targets
 
