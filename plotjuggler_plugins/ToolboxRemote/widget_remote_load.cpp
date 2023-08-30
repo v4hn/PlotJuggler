@@ -2,6 +2,9 @@
 #include "ui_widget_remote_load.h"
 #include <QTableWidgetItem>
 #include <QSettings>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QDateTime>
 
 RemoteLoad::RemoteLoad(QWidget *parent) :
   QDialog(parent),
@@ -19,29 +22,30 @@ RemoteLoad::RemoteLoad(QWidget *parent) :
   connect (ui->buttonBox, &QDialogButtonBox::rejected, this, &RemoteLoad::rejected);
 
   QSettings settings;
-  settings.beginGroup("RemoteLoadWidget");
+  ui->spinBox->setValue( settings.value("RemoteLoad::max_array_size", 500).toInt());
 
-  ui->spinBox->setValue( settings.value("max_array_size", 500).toInt());
-
-  if(settings.value("clamp_large_array_size", true).toBool())
+  if(settings.value("RemoteLoad::clamp_large_array_size", true).toBool())
   {
     ui->radioClamp->setChecked(true);
   }
   else {
     ui->radioSkip->setChecked(true);
   }
-  ui->lineHost->setText( settings.value("host", "localhost").toString() );
-  ui->linePort->setText( QString::number( settings.value("port", 1667).toInt()) );
+  ui->lineHost->setText( settings.value("RemoteLoad::host", "localhost").toString() );
+  ui->linePort->setText( QString::number( settings.value("RemoteLoad::port", 1667).toInt()) );
+  ui->lineDestination->setText(settings.value("RemoteLoad::setPath", QString()).toString());
+  ui->checkBoxAppendDate->setChecked(settings.value("RemoteLoad::appendDate", false).toBool());
 }
 
 RemoteLoad::~RemoteLoad()
 {
   QSettings settings;
-  settings.beginGroup("RemoteLoadWidget");
-  settings.setValue("max_array_size", ui->spinBox->value() );
-  settings.setValue("clamp_large_array_size", ui->radioClamp->isChecked() );
-  settings.setValue("host", ui->lineHost->text() );
-  settings.setValue("port", ui->linePort->text().toInt() );
+  settings.setValue("RemoteLoad::max_array_size", ui->spinBox->value() );
+  settings.setValue("RemoteLoad::clamp_large_array_size", ui->radioClamp->isChecked() );
+  settings.setValue("RemoteLoad::host", ui->lineHost->text() );
+  settings.setValue("RemoteLoad::port", ui->linePort->text().toInt() );
+  settings.setValue("RemoteLoad::setPath", ui->lineDestination->text());
+  settings.setValue("RemoteLoad::appendDate", ui->checkBoxAppendDate->isChecked());
 
   delete ui;
 }
@@ -114,6 +118,31 @@ std::pair<double, double> RemoteLoad::getTimeRange()
   return {ui->timeMin->value(), ui->timeMax->value()};
 }
 
+QString RemoteLoad::getSaveFile() const
+{
+  if(!ui->checkBoxSaveMCAP->isChecked())
+  {
+    return {};
+  }
+
+  QString filepath = ui->lineDestination->text();
+  if(filepath.isEmpty())
+  {
+    return {};
+  }
+  if(ui->checkBoxAppendDate->isChecked())
+  {
+    const auto info = QFileInfo(filepath);
+    auto filename = info.baseName() +
+                    QDateTime::currentDateTime().toString("-yyyy_MM_dd-hh_mm") +
+                    ".mcap";
+    return info.dir().filePath(filename);
+  }
+  else {
+    return filepath;
+  }
+}
+
 void RemoteLoad::on_buttonOpenFile_clicked()
 {
   QString host = ui->lineHost->text();
@@ -142,5 +171,30 @@ void RemoteLoad::on_buttonResetTimes_clicked()
 {
   ui->timeMin->setValue(ui->timeMax->minimum());
   ui->timeMax->setValue(ui->timeMax->maximum());
+}
+
+void RemoteLoad::on_checkBoxSaveMCAP_toggled(bool checked)
+{
+  ui->widgetSave->setEnabled(checked);
+}
+
+
+void RemoteLoad::on_buttonSaveDestination_clicked()
+{
+  QString filepath = ui->lineDestination->text();
+  QString directory = filepath.isEmpty() ? QDir::currentPath() : filepath;
+
+  auto save_path = QFileDialog::getSaveFileName(this,
+                                                "Save downloaded data to...",
+                                                directory, "*.mcap");
+
+  if(!save_path.isEmpty())
+  {
+    if(QFileInfo(save_path).suffix() != "mcap")
+    {
+      save_path += ".mcap";
+    }
+    ui->lineDestination->setText(save_path);
+  }
 }
 

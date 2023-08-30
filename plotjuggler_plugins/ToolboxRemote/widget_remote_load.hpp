@@ -32,6 +32,8 @@ public:
 
   std::pair<double, double> getTimeRange();
 
+  QString getSaveFile() const;
+
 signals:
 
   void openFile(QString host, int port);
@@ -45,6 +47,10 @@ private slots:
   void on_buttonLoadData_clicked();
 
   void on_buttonResetTimes_clicked();
+
+  void on_checkBoxSaveMCAP_toggled(bool checked);
+
+  void on_buttonSaveDestination_clicked();
 
 private:
   Ui::RemoteLoad *ui;

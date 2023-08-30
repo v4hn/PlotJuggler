@@ -344,7 +344,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="" native="true">
+       <widget class="QWidget" name="widget" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <property name="leftMargin">
           <number>2</number>
@@ -367,14 +367,14 @@
             </font>
            </property>
            <property name="text">
-            <string>Select the topics that you want to load:</string>
+            <string>Select the topics that you want to download:</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="buttonLoadData">
            <property name="text">
-            <string>Load</string>
+            <string>Download</string>
            </property>
           </widget>
          </item>
@@ -435,6 +435,39 @@
           <string>Message count</string>
          </property>
         </column>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBoxSaveMCAP">
+        <property name="text">
+         <string>Save locally a MCAP file containing the download data</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widgetSave" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <property name="topMargin">
+          <number>1</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="buttonSaveDestination">
+           <property name="text">
+            <string>Set destination</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineDestination"/>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBoxAppendDate">
+           <property name="text">
+            <string>Append date time to filename</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

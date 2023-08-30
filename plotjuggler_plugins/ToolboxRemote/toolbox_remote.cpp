@@ -3,7 +3,9 @@
 #include <QMessageBox>
 #include <array>
 #include <math.h>
-#include "fmt/format.h"
+
+#define MCAP_IMPLEMENTATION
+#include "mcap/writer.hpp"
 
 #include "ui_dialog_file_selection.h"
 
@@ -39,6 +41,11 @@ ToolboxRemote::ToolboxRemote() : _widget(new RemoteLoad)
           this, &ToolboxRemote::onShowFilesToSelect);
 
   connect(_widget, &RemoteLoad::rejected, this, [this]() {
+    if(_mcap_writer)
+    {
+      _mcap_writer->close();
+      _mcap_writer.reset();
+    }
     emit closed();
   });
 
@@ -64,6 +71,11 @@ ToolboxRemote::ToolboxRemote() : _widget(new RemoteLoad)
               _progress_dialog->close();
               _progress_dialog = nullptr;
             }
+            if(_mcap_writer)
+            {
+              _mcap_writer->close();
+              _mcap_writer.reset();
+            }
             emit closed();
           });
 
@@ -73,6 +85,7 @@ ToolboxRemote::ToolboxRemote() : _widget(new RemoteLoad)
 
 ToolboxRemote::~ToolboxRemote()
 {
+  delete _widget;
 }
 
 void ToolboxRemote::init(PJ::PlotDataMapRef& /*src_data*/, PJ::TransformsMap& /*transform_map*/)
@@ -220,6 +233,13 @@ void ToolboxRemote::onLoadTopics(QStringList topics)
 
   connect(_progress_dialog, &QProgressDialog::canceled,
           &_client, &mcap_client::MCAPClient::cancelDownload);
+
+
+  auto filepath = _widget->getSaveFile();
+  if(!filepath.isEmpty())
+  {
+    saveData(filepath, topics);
+  }
 }
 
 void ToolboxRemote::onChunkReceived(const mcap_api::ChunkView &chunk)
@@ -229,6 +249,18 @@ void ToolboxRemote::onChunkReceived(const mcap_api::ChunkView &chunk)
   for(const auto& msg_view: chunk.msgs)
   {
     double timestamp_sec = double(msg_view.timestamp) * 1e-9;
+
+    if(_mcap_writer)
+    {
+      mcap::Message msg;
+      const auto channel_id = _channeld_id_remapping.at(msg_view.channel_id);
+      msg.channelId = channel_id;
+      msg.logTime = msg_view.timestamp;
+      msg.publishTime = msg_view.timestamp;
+      msg.data = msg_view.data;
+      msg.dataSize = msg_view.data_size;
+      auto res = _mcap_writer->write(msg);
+    }
 
     auto parser_it = _parsers_by_channel.find(msg_view.channel_id);
     if( parser_it == _parsers_by_channel.end() )
@@ -240,4 +272,36 @@ void ToolboxRemote::onChunkReceived(const mcap_api::ChunkView &chunk)
     MessageRef msg(msg_view.data, msg_view.data_size);
     parser->parseMessage(msg, timestamp_sec);
   }
+}
+
+bool ToolboxRemote::saveData(QString filepath, QStringList topics)
+{
+  _mcap_writer = std::make_shared<mcap::McapWriter>();
+
+  auto options = mcap::McapWriterOptions("MCAP PlotJuggler Cache");
+  const auto res = _mcap_writer->open(filepath.toStdString(), options);
+  if (!res.ok())
+  {
+    QMessageBox::warning(_widget, "MCAP cache saving",
+                         QString("Failed to open the file: \n%0").arg(filepath));
+    return false;
+  }
+
+  for(auto const& info: _statistics.channels)
+  {
+    if(!topics.contains(QString::fromStdString(info.topic)))
+    {
+      continue;
+    }
+
+    mcap::Schema schema(info.schema_name,
+                        info.schema_encoding,
+                        info.schema_data);
+    _mcap_writer->addSchema(schema);
+    mcap::Channel channel(info.topic, info.message_encoding, schema.id);
+    _mcap_writer->addChannel(channel);
+    _channeld_id_remapping.insert({ info.id, channel.id});
+  }
+
+  return true;
 }

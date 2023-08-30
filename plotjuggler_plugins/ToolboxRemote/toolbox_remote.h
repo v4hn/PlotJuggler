@@ -12,6 +12,11 @@
 
 #include <QDialog>
 
+namespace mcap
+{
+class McapWriter;
+}
+
 class ToolboxRemote : public PJ::ToolboxPlugin
 {
   Q_OBJECT
@@ -61,4 +66,10 @@ private:
   QProgressDialog* _progress_dialog = nullptr;
 
   QString _current_filename;
+
+  std::shared_ptr<mcap::McapWriter> _mcap_writer;
+  // from old ID to new one
+  std::unordered_map<int, int> _channeld_id_remapping;
+
+  bool saveData(QString filepath, QStringList topics);
 };
