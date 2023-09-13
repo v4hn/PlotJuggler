@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
-project(mcapRemoteClient LANGUAGES CXX)
-
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5 REQUIRED COMPONENTS WebSockets)
