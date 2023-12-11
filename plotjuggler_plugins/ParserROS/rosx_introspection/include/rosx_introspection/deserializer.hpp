@@ -12,7 +12,7 @@ namespace eprosima::fastcdr
 {
 class FastBuffer;
 class Cdr;
-}
+}  // namespace eprosima::fastcdr
 
 namespace RosMsgParser
 {
@@ -20,7 +20,6 @@ namespace RosMsgParser
 class Deserializer
 {
 public:
-
   virtual void init(Span<const uint8_t> buffer)
   {
     _buffer = buffer;
@@ -46,7 +45,7 @@ public:
 
   virtual size_t bytesLeft() const
   {
-    return _buffer.size() - ( getCurrentPtr() - _buffer.data() );
+    return _buffer.size() - (getCurrentPtr() - _buffer.data());
   }
 
   // reset the pointer to beginning of buffer
@@ -62,7 +61,6 @@ protected:
 class ROS_Deserializer : public Deserializer
 {
 public:
-
   Variant deserialize(BuiltinType type) override;
 
   void deserializeString(std::string& dst) override;
@@ -78,18 +76,18 @@ public:
   void reset() override;
 
 protected:
-
   const uint8_t* _ptr;
   size_t _bytes_left;
 
-  template <typename T> T deserialize()
+  template <typename T>
+  T deserialize()
   {
     T out;
-    if ( sizeof(T) > _bytes_left )
+    if (sizeof(T) > _bytes_left)
     {
       throw std::runtime_error("Buffer overrun in Deserializer");
     }
-    out =  ( *(reinterpret_cast<const T*>( _ptr )) );
+    out = (*(reinterpret_cast<const T*>(_ptr)));
     _bytes_left -= sizeof(T);
     _ptr += sizeof(T);
     return out;
@@ -103,7 +101,6 @@ protected:
 class FastCDR_Deserializer : public Deserializer
 {
 public:
-
   Variant deserialize(BuiltinType type) override;
 
   void deserializeString(std::string& dst) override;
@@ -119,14 +116,12 @@ public:
   virtual void reset() override;
 
 protected:
-
   std::shared_ptr<eprosima::fastcdr::FastBuffer> _cdr_buffer;
   std::shared_ptr<eprosima::fastcdr::Cdr> _cdr;
-
 };
 
 using ROS2_Deserializer = FastCDR_Deserializer;
 
-}
+}  // namespace RosMsgParser
 
-#endif // DESERIALIZER_HPP
+#endif  // DESERIALIZER_HPP

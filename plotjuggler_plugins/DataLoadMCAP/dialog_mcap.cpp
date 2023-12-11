@@ -8,18 +8,18 @@
 
 const QString DialogMCAP::prefix = "DialogLoadMCAP::";
 
-
-DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr> &channels,
-                       const std::unordered_map<int, mcap::SchemaPtr> &schemas,
-                       QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::dialog_mcap)
+DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels,
+                       const std::unordered_map<int, mcap::SchemaPtr>& schemas,
+                       QWidget* parent)
+  : QDialog(parent), ui(new Ui::dialog_mcap)
 {
   ui->setupUi(this);
 
   ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-  ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-  ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+  ui->tableWidget->horizontalHeader()->setSectionResizeMode(
+      1, QHeaderView::ResizeToContents);
+  ui->tableWidget->horizontalHeader()->setSectionResizeMode(
+      2, QHeaderView::ResizeToContents);
 
   ui->tableWidget->setRowCount(channels.size());
 
@@ -30,26 +30,29 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr> &channels
   bool clamp_checked = settings.value(prefix + "clamp", true).toBool();
   int max_array = settings.value(prefix + "max_array", 500).toInt();
 
-  if( clamp_checked )
+  if (clamp_checked)
   {
     ui->radioClamp->setChecked(true);
   }
-  else{
+  else
+  {
     ui->radioSkip->setChecked(true);
   }
-  ui->spinBox->setValue( max_array );
+  ui->spinBox->setValue(max_array);
 
   int row = 0;
-  for(const auto& [id, channel]: channels )
+  for (const auto& [id, channel] : channels)
   {
     auto topic = QString::fromStdString(channel->topic);
-    auto const& schema = schemas.at( channel->schemaId );
+    auto const& schema = schemas.at(channel->schemaId);
 
-    ui->tableWidget->setItem(row, 0, new QTableWidgetItem(topic) );
-    ui->tableWidget->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(schema->name)) );
-    ui->tableWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(schema->encoding)) );
+    ui->tableWidget->setItem(row, 0, new QTableWidgetItem(topic));
+    ui->tableWidget->setItem(row, 1,
+                             new QTableWidgetItem(QString::fromStdString(schema->name)));
+    ui->tableWidget->setItem(
+        row, 2, new QTableWidgetItem(QString::fromStdString(schema->encoding)));
 
-    if( selected.contains(topic) )
+    if (selected.contains(topic))
     {
       ui->tableWidget->selectRow(row);
     }
@@ -69,11 +72,11 @@ DialogMCAP::Params DialogMCAP::getParams() const
   params.max_array_size = ui->spinBox->value();
   params.clamp_large_arrays = ui->radioClamp->isChecked();
 
-  QItemSelectionModel *select = ui->tableWidget->selectionModel();
+  QItemSelectionModel* select = ui->tableWidget->selectionModel();
   QStringList selected_topics;
-  for(QModelIndex index: select->selectedRows())
+  for (QModelIndex index : select->selectedRows())
   {
-    params.selected_topics.push_back( ui->tableWidget->item(index.row(), 0)->text() );
+    params.selected_topics.push_back(ui->tableWidget->item(index.row(), 0)->text());
   }
   return params;
 }
@@ -95,11 +98,11 @@ void DialogMCAP::accept()
   settings.setValue(prefix + "clamp", clamp_checked);
   settings.setValue(prefix + "max_array", max_array);
 
-  QItemSelectionModel *select = ui->tableWidget->selectionModel();
+  QItemSelectionModel* select = ui->tableWidget->selectionModel();
   QStringList selected_topics;
-  for(QModelIndex index: select->selectedRows())
+  for (QModelIndex index : select->selectedRows())
   {
-    selected_topics.push_back( ui->tableWidget->item(index.row(), 0)->text() );
+    selected_topics.push_back(ui->tableWidget->item(index.row(), 0)->text());
   }
   settings.setValue(prefix + "selected", selected_topics);
 

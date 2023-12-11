@@ -9,10 +9,8 @@
 class ParserROS : public PJ::MessageParser
 {
 public:
-  ParserROS(const std::string& topic_name,
-            const std::string& type_name,
-            const std::string& schema,
-            RosMsgParser::Deserializer *deserializer,
+  ParserROS(const std::string& topic_name, const std::string& type_name,
+            const std::string& schema, RosMsgParser::Deserializer* deserializer,
             PJ::PlotDataMapRef& data);
 
   bool parseMessage(const PJ::MessageRef serialized_msg, double& timestamp) override;
@@ -59,25 +57,23 @@ protected:
   bool _has_header = false;
 };
 
-template<size_t N> inline
-void ParserROS::parseCovariance(const std::string &prefix, double &timestamp)
+template <size_t N>
+inline void ParserROS::parseCovariance(const std::string& prefix, double& timestamp)
 {
-    std::array<double, N*N> cov;
-    for(auto& val: cov)
+  std::array<double, N * N> cov;
+  for (auto& val : cov)
+  {
+    _deserializer->deserialize(RosMsgParser::FLOAT64).convert<double>();
+  }
+  for (int i = 0; i < N; i++)
+  {
+    for (int j = i; j < N; j++)
     {
-        _deserializer->deserialize(RosMsgParser::FLOAT64).convert<double>();
+      const size_t index = i * N + j;
+      getSeries(fmt::format("{}[{}][{}]", prefix, i, j))
+          .pushBack({ timestamp, cov[index] });
     }
-    for(int i=0; i<N; i++)
-    {
-        for(int j=i; j<N; j++)
-        {
-            const size_t index = i*N + j;
-            getSeries(fmt::format("{}[{}][{}]", prefix, i, j)).pushBack( {timestamp, cov[index]} );
-        }
-    }
+  }
 }
 
-
-
-
-#endif // ROS_PARSER_H
+#endif  // ROS_PARSER_H

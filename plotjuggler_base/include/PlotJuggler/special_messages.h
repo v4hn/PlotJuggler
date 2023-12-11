@@ -19,7 +19,7 @@ struct Time
 
   double toSec() const
   {
-    return double(sec) + double(nanosec)*1e-9;
+  return double(sec) + double(nanosec)*1e-9;
   }
 };
 
@@ -61,11 +61,11 @@ struct Vector3
 
 struct Point
 {
-    double x;
-    double y;
-    double z;
+  double x;
+  double y;
+  double z;
 
-    static const char* id() { return "geometry_msgs/Point"; }
+  static const char* id() { return "geometry_msgs/Point"; }
 };
 
 struct Quaternion
@@ -97,51 +97,51 @@ struct Transform
 
 struct TransformStamped
 {
-    Header header;
-    std::string child_frame_id;
-    Transform transform;
+  Header header;
+  std::string child_frame_id;
+  Transform transform;
 
-    static const char* id() { return "geometry_msgs/TransformStamped"; }
+  static const char* id() { return "geometry_msgs/TransformStamped"; }
 };
 
 struct Pose
 {
-    Vector3 position;
-    Quaternion orientation;
+  Vector3 position;
+  Quaternion orientation;
 
-    static const char* id() { return "geometry_msgs/Pose"; }
+  static const char* id() { return "geometry_msgs/Pose"; }
 };
 
 struct PoseStamped
 {
-    Header header;
-    Pose pose;
+  Header header;
+  Pose pose;
 
-    static const char* id() { return "geometry_msgs/PoseStamped"; }
+  static const char* id() { return "geometry_msgs/PoseStamped"; }
 };
 
 struct PoseWithCovariance
 {
-    Pose pose;
-    std::array<double, 36> covariance;
+  Pose pose;
+  std::array<double, 36> covariance;
 
-    static const char* id() { return "geometry_msgs/PoseWithCovariance"; }
+  static const char* id() { return "geometry_msgs/PoseWithCovariance"; }
 };
 
 struct Twist
 {
-    Vector3  linear;
-    Vector3  angular;
+  Vector3  linear;
+  Vector3  angular;
 
-    static const char* id() { return "geometry_msgs/Twist"; }
+  static const char* id() { return "geometry_msgs/Twist"; }
 };
 
 struct TwistWithCovariance
 {
-    Twist twist;
-    std::array<double, 36> covariance;
+  Twist twist;
+  std::array<double, 36> covariance;
 
-    static const char* id() { return "geometry_msgs/TwistWithCovariance"; }
+  static const char* id() { return "geometry_msgs/TwistWithCovariance"; }
 };
 
 struct TFMessage
@@ -154,24 +154,24 @@ struct TFMessage
 
 struct Imu
 {
-    Header header;
-    Quaternion orientation;
-    std::array<double, 9> orientation_covariance;
-    Vector3 angular_velocity;
-    std::array<double, 9> angular_velocity_covariance;
-    Vector3 linear_acceleration;
-    std::array<double, 9> linear_acceleration_covariance;
+  Header header;
+  Quaternion orientation;
+  std::array<double, 9> orientation_covariance;
+  Vector3 angular_velocity;
+  std::array<double, 9> angular_velocity_covariance;
+  Vector3 linear_acceleration;
+  std::array<double, 9> linear_acceleration_covariance;
 
-    static const char* id() { return "sensor_msgs/Imu"; }
+  static const char* id() { return "sensor_msgs/Imu"; }
 };
 //--------------------
 struct Odometry
 {
-    Header header;
-    PoseWithCovariance pose;
-    TwistWithCovariance twist;
+  Header header;
+  PoseWithCovariance pose;
+  TwistWithCovariance twist;
 
-    static const char* id() { return "nav_msgs/Odometry"; }
+  static const char* id() { return "nav_msgs/Odometry"; }
 };
 
 //--------------------
