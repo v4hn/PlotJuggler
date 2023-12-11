@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <string>
 #include <iostream>
-#include <unordered_map>
 
 #include "rosx_introspection/contrib/span.hpp"
 #include "rosx_introspection/contrib/SmallVector.h"

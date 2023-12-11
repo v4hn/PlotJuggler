@@ -14,6 +14,7 @@
 #include "mcap/reader.hpp"
 #include "dialog_mcap.h"
 
+#include <QElapsedTimer>
 #include <QStandardItemModel>
 
 DataLoadMCAP::DataLoadMCAP()
@@ -79,6 +80,10 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
   }
 
   std::set<QString> notified_encoding_problem;
+
+
+  QElapsedTimer timer;
+  timer.start();
 
   for (const auto& [channel_id, channel_ptr] : reader.channels())
   {
@@ -193,15 +198,6 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     MessageRef msg(msg_view.message.data, msg_view.message.dataSize);
     parser->parseMessage(msg, timestamp_sec);
 
-    // data tamer schema
-    if( channels_containing_datatamer_schema.count(msg_view.channel->id) != 0)
-    {
-
-
-    }
-
-    // regular message
-
     if (msg_count++ % 1000 == 0)
     {
       QApplication::processEvents();
@@ -213,6 +209,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
   }
 
   reader.close();
+  qDebug() << "Loaded file in " << timer.elapsed() << "milliseconds";
   return true;
 }
 

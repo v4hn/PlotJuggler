@@ -1,6 +1,6 @@
 #include "ros_parser.h"
 #include "data_tamer_parser/data_tamer_parser.hpp"
-#include "PlotJuggler/fmt/format.h"
+#include "PlotJuggler/fmt/core.h"
 
 using namespace PJ;
 using namespace RosMsgParser;
@@ -47,23 +47,38 @@ ParserROS::ParserROS(const std::string& topic_name,
   {
     _customized_parser = std::bind(&ParserROS::parseDataTamerSnapshotMsg, this, _1, _2);
   }
-
-  //---------- detect quaternion in schema --------
-  auto hasQuaternion = [this](const auto& node) {
-    if(node->value()->type() == quaternion_type)
-    {
-      _contains_quaternion = true;
-    }
-  };
-  const auto& tree = _parser.getSchema()->field_tree;
-  tree.visit(hasQuaternion, tree.croot());
+  else if( Msg::Imu::id() == type_name)
+  {
+      _customized_parser = std::bind(&ParserROS::parseImu, this, _1, _2);
+  }
+  else if( Msg::Pose::id() == type_name)
+  {
+      _customized_parser = std::bind(&ParserROS::parsePose, this, _1, _2);
+  }
+  else if( Msg::PoseStamped::id() == type_name)
+  {
+      _customized_parser = std::bind(&ParserROS::parsePoseStamped, this, _1, _2);
+  }
+  else if( Msg::Odometry::id() == type_name)
+  {
+      _customized_parser = std::bind(&ParserROS::parseOdometry, this, _1, _2);
+  }
+  else if( Msg::Transform::id() == type_name)
+  {
+      _customized_parser = std::bind(&ParserROS::parseTransform, this, _1, _2);
+  }
+  else if( Msg::TransformStamped::id() == type_name)
+  {
+      _customized_parser = std::bind(&ParserROS::parseTransformStamped, this, _1, _2);
+  }
 }
 
 bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double &timestamp)
 {
   if( _customized_parser )
   {
-    _customized_parser(serialized_msg, timestamp);
+    _deserializer->init( Span<const uint8_t>(serialized_msg.data(), serialized_msg.size()) );
+    _customized_parser(_topic_name, timestamp);
     return true;
   }
 
@@ -84,11 +99,6 @@ bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double &timest
     PlotData& data = getSeries(series_name);
     data.pushBack( {timestamp, value.convert<double>() } );
   }
-
-  if( _contains_quaternion )
-  {
-    appendRollPitchYaw(timestamp);
-  }
   return true;
 }
 
@@ -97,72 +107,159 @@ void ParserROS::setLargeArraysPolicy(bool clamp, unsigned max_size)
   auto policy = clamp ? RosMsgParser::Parser::KEEP_LARGE_ARRAYS :
                         RosMsgParser::Parser::DISCARD_LARGE_ARRAYS;
 
-  _parser.setMaxArrayPolicy( policy, max_size );  
+  _parser.setMaxArrayPolicy( policy, max_size );
   MessageParser::setLargeArraysPolicy(clamp, max_size);
 }
 
-void ParserROS::appendRollPitchYaw(double stamp)
+//------------------------------------------------------------------------
+
+Msg::Header ParserROS::parseHeader(const std::string &prefix, double& timestamp)
 {
-
-  for(size_t i=0; i< _flat_msg.value.size(); i++ )
-  {
-    const auto& [key, val] = _flat_msg.value[i];
-
-    if( key.fields.size() < 2 || (i+3) >= _flat_msg.value.size() )
+    Msg::Header header;
+    const bool is_ros1 = dynamic_cast<ROS_Deserializer*>(_deserializer.get()) != nullptr;
+    // only ROS1 as the files header.seq
+    if( is_ros1 )
     {
-      continue;
+        header.seq = _deserializer->deserializeUInt32();
     }
-    size_t last = key.fields.size() - 1;
 
-    if( key.fields[last-1]->type() == quaternion_type &&
-        key.fields[last]->type().typeID() == RosMsgParser::FLOAT64 &&
-        key.fields[last]->name() == "x")
+    header.stamp.sec = _deserializer->deserializeUInt32();
+    header.stamp.nanosec = _deserializer->deserializeUInt32();
+
+    const double ts = double(header.stamp.sec) + 1e-9*double(header.stamp.nanosec);
+    if(useEmbeddedTimestamp()) {
+        timestamp = ts;
+    }
+
+    _deserializer->deserializeString(header.frame_id);
+
+    getSeries(prefix + "/header/stamp").pushBack( {timestamp, ts} );
+    if( is_ros1 )
     {
-      Msg::Quaternion quat;
-
-      quat.x = val.convert<double>();
-      quat.y = _flat_msg.value[i+1].second.convert<double>();
-      quat.z = _flat_msg.value[i+2].second.convert<double>();
-      quat.w = _flat_msg.value[i+3].second.convert<double>();
-
-      std::string prefix = key.toStdString();
-      prefix.pop_back();
-
-      auto rpy = Msg::QuaternionToRPY( quat );
-
-      getSeries(prefix + "roll_deg").pushBack( {stamp, RAD_TO_DEG * rpy.roll } );
-      getSeries(prefix + "pitch_deg").pushBack( {stamp, RAD_TO_DEG * rpy.pitch } );
-      getSeries(prefix + "yaw_deg").pushBack( {stamp, RAD_TO_DEG * rpy.yaw } );
-
-      break;
+        getSeries(prefix + "/header/seq").pushBack( {timestamp, double(header.seq)} );
     }
-  }
+    getStringSeries(prefix + "/header/frame_id").pushBack( {timestamp, header.frame_id} );
+
+    return header;
 }
 
-void ParserROS::parseHeader(Msg::Header &header)
+void ParserROS::parseVector3(const std::string &prefix, double& timestamp)
 {
-  // only ROS1 as the files header.seq
-  if( dynamic_cast<ROS_Deserializer*>(_deserializer.get()) )
-  {
-    header.seq = _deserializer->deserializeUInt32();
-  }
-
-  header.stamp.sec = _deserializer->deserializeUInt32();
-  header.stamp.nanosec = _deserializer->deserializeUInt32();
-  _deserializer->deserializeString(header.frame_id);
+    auto x = _deserializer->deserialize(FLOAT64).convert<double>();
+    auto y = _deserializer->deserialize(FLOAT64).convert<double>();
+    auto z = _deserializer->deserialize(FLOAT64).convert<double>();
+    getSeries(prefix + "/x").pushBack( {timestamp, x} );
+    getSeries(prefix + "/y").pushBack( {timestamp, y} );
+    getSeries(prefix + "/z").pushBack( {timestamp, z} );
 }
 
-void ParserROS::parseDiagnosticMsg(const PJ::MessageRef msg_buffer, double &timestamp)
+void ParserROS::parsePoint(const std::string &prefix, double& timestamp)
 {
-  using namespace RosMsgParser;
+    auto x = _deserializer->deserialize(FLOAT64).convert<double>();
+    auto y = _deserializer->deserialize(FLOAT64).convert<double>();
+    auto z = _deserializer->deserialize(FLOAT64).convert<double>();
+    getSeries(prefix + "/x").pushBack( {timestamp, x} );
+    getSeries(prefix + "/y").pushBack( {timestamp, y} );
+    getSeries(prefix + "/z").pushBack( {timestamp, z} );
+}
 
+void ParserROS::parseQuaternion(const std::string &prefix, double& timestamp)
+{
+    PJ::Msg::Quaternion quat;
+    quat.x = _deserializer->deserialize(FLOAT64).convert<double>();
+    quat.y = _deserializer->deserialize(FLOAT64).convert<double>();
+    quat.z = _deserializer->deserialize(FLOAT64).convert<double>();
+    quat.w = _deserializer->deserialize(FLOAT64).convert<double>();
+    getSeries(prefix + "/x").pushBack( {timestamp, quat.x} );
+    getSeries(prefix + "/y").pushBack( {timestamp, quat.y} );
+    getSeries(prefix + "/z").pushBack( {timestamp, quat.z} );
+    getSeries(prefix + "/z").pushBack( {timestamp, quat.w} );
+
+    auto rpy = Msg::QuaternionToRPY( quat );
+    getSeries(prefix + "/roll").pushBack( {timestamp, rpy.roll} );
+    getSeries(prefix + "/pitch").pushBack( {timestamp, rpy.pitch} );
+    getSeries(prefix + "/yaw").pushBack( {timestamp, rpy.yaw} );
+}
+
+
+void ParserROS::parseTwist(const std::string &prefix, double& timestamp)
+{
+    parseVector3(prefix + "/linear", timestamp);
+    parseVector3(prefix + "/angular", timestamp);
+}
+
+
+void ParserROS::parseTwistWithCovariance(const std::string &prefix, double& timestamp)
+{
+    parseTwist(prefix + "/twist", timestamp);
+    parseCovariance<6>(prefix + "/covariance", timestamp);
+}
+
+void ParserROS::parseTransform(const std::string &prefix, double& timestamp)
+{
+    parsePoint(prefix + "/translation", timestamp);
+    parseQuaternion(prefix + "/rotation", timestamp);
+}
+
+void ParserROS::parseTransformStamped(const std::string &prefix, double& timestamp)
+{
+    parseHeader(prefix + "/header", timestamp);
+
+    std::string child_frame_id;
+    _deserializer->deserializeString(child_frame_id);
+    getStringSeries(prefix + "/child_frame_id").pushBack( {timestamp, child_frame_id} );
+
+    parseTransform(prefix + "/transform", timestamp);
+}
+
+void ParserROS::parsePose(const std::string &prefix, double &timestamp)
+{
+    parseVector3(prefix + "/position", timestamp);
+    parseQuaternion(prefix + "/orientation", timestamp);
+}
+
+void ParserROS::parsePoseStamped(const std::string &prefix, double &timestamp)
+{
+    parseHeader(prefix + "/header", timestamp);
+    parsePose(prefix + "/pose", timestamp);
+}
+
+void ParserROS::parsePoseWithCovariance(const std::string &prefix, double &timestamp)
+{
+    parsePose(prefix + "/pose", timestamp);
+    parseCovariance<6>(prefix + "/covariance", timestamp);
+}
+
+void ParserROS::parseImu(const std::string &prefix, double &timestamp)
+{
+    parseHeader(prefix + "/header", timestamp);
+
+    parseQuaternion(prefix + "/orientation", timestamp);
+    parseCovariance<3>(prefix + "/orientation_covariance", timestamp);
+
+    parseVector3(prefix + "/angular_velocity", timestamp);
+    parseCovariance<3>(prefix + "/angular_velocity_covariance", timestamp);
+
+    parseVector3(prefix + "/linear_acceleration", timestamp);
+    parseCovariance<3>(prefix + "/linear_acceleration_covariance", timestamp);
+}
+
+void ParserROS::parseOdometry(const std::string &prefix, double &timestamp)
+{
+    parseHeader(prefix + "/header", timestamp);
+    parsePoseWithCovariance(prefix + "/pose", timestamp);
+    parseTwistWithCovariance(prefix + "/twist", timestamp);
+}
+
+void ParserROS::parseDiagnosticMsg(const std::string &prefix, double &timestamp)
+{
   thread_local Msg::DiagnosticArray msg;
-  _deserializer->init( Span<const uint8_t>(msg_buffer.data(), msg_buffer.size()) );
 
-  parseHeader(msg.header);
+  parseHeader(prefix + "/header", timestamp);
 
   size_t status_count = _deserializer->deserializeUInt32();
   msg.status.resize( status_count );
+
   for(size_t st = 0; st < status_count; st++)
   {
     auto& status = msg.status[st];
@@ -185,10 +282,6 @@ void ParserROS::parseDiagnosticMsg(const PJ::MessageRef msg_buffer, double &time
   }
 
   //------ Now create the series --------
-  double ts = timestamp;
-  getSeries(fmt::format("{}/header/seq", _topic)).pushBack( {ts, double(msg.header.seq)} );
-  getSeries(fmt::format("{}/header/stamp", _topic)).pushBack( {ts, msg.header.stamp.toSec()} );
-  getStringSeries(fmt::format("{}/header/frame_id", _topic)).pushBack( {ts, msg.header.frame_id} );
 
   std::string series_name;
 
@@ -199,11 +292,11 @@ void ParserROS::parseDiagnosticMsg(const PJ::MessageRef msg_buffer, double &time
       if (status.hardware_id.empty())
       {
         series_name = fmt::format("{}/{}/{}",
-                                  _topic, status.name, kv.first);
+                                  prefix, status.name, kv.first);
       }
       else {
         series_name = fmt::format("{}/{}/{}/{}",
-                                  _topic, status.hardware_id, status.name, kv.first);
+                                  prefix, status.hardware_id, status.name, kv.first);
       }
 
       bool ok;
@@ -220,17 +313,16 @@ void ParserROS::parseDiagnosticMsg(const PJ::MessageRef msg_buffer, double &time
   }
 }
 
-void ParserROS::parseJointStateMsg(const MessageRef msg_buffer, double &timestamp)
+void ParserROS::parseJointStateMsg(const std::string &prefix, double &timestamp)
 {
   thread_local Msg::JointState msg;
-  _deserializer->init( Span<const uint8_t>(msg_buffer.data(), msg_buffer.size()) );
 
   msg.name.clear();
   msg.position.clear();
   msg.velocity.clear();
   msg.effort.clear();
 
-  parseHeader(msg.header);
+  parseHeader(prefix, timestamp);
 
   size_t name_size = _deserializer->deserializeUInt32();
   if( name_size > 0 )
@@ -291,65 +383,35 @@ void ParserROS::parseJointStateMsg(const MessageRef msg_buffer, double &timestam
   }
 }
 
-void ParserROS::parseTF2Msg(const MessageRef msg_buffer, double &stamp)
+void ParserROS::parseTF2Msg(const std::string &prefix, double &timestamp)
 {
-  thread_local Msg::TFMessage msg;
-  _deserializer->init( Span<const uint8_t>(msg_buffer.data(), msg_buffer.size()) );
-
-  size_t transform_size = _deserializer->deserializeUInt32();
+  const size_t transform_size = _deserializer->deserializeUInt32();
 
   if( transform_size == 0)
   {
     return;
   }
-  msg.transforms.resize(transform_size);
 
-  auto getDouble = [this]() {
-    return _deserializer->deserialize(FLOAT64).convert<double>();
-  };
-
-  for(auto& trans: msg.transforms)
+  for(size_t i=0; i<transform_size; i++)
   {
-    parseHeader(trans.header);
-    _deserializer->deserializeString(trans.child_frame_id);
+    auto header = parseHeader(prefix, timestamp);
+    std::string child_frame_id;
+    _deserializer->deserializeString(child_frame_id);
 
-    std::string prefix;
-    if (trans.header.frame_id.empty())
+    std::string new_prefix;
+    if (header.frame_id.empty())
     {
-      prefix = fmt::format("{}/{}",
-                           _topic_name, trans.child_frame_id);
+      new_prefix = fmt::format("{}/{}", prefix, child_frame_id);
     }
     else {
-      prefix = fmt::format("{}/{}/{}",
-                           _topic_name, trans.header.frame_id, trans.child_frame_id);
+      new_prefix = fmt::format("{}/{}/{}", prefix, header.frame_id, child_frame_id);
     }
-
-    getSeries(fmt::format("{}/translation/x", prefix)).pushBack( {stamp, getDouble()} );
-    getSeries(fmt::format("{}/translation/y", prefix)).pushBack( {stamp, getDouble()} );
-    getSeries(fmt::format("{}/translation/z", prefix)).pushBack( {stamp, getDouble()} );
-
-    Msg::Quaternion quat = { getDouble(), getDouble(), getDouble(), getDouble() };
-    auto RPY = Msg::QuaternionToRPY(quat);
-
-    getSeries(fmt::format("{}/rotation/x", prefix)).pushBack( {stamp, quat.x} );
-    getSeries(fmt::format("{}/rotation/y", prefix)).pushBack( {stamp, quat.y} );
-    getSeries(fmt::format("{}/rotation/z", prefix)).pushBack( {stamp, quat.z} );
-    getSeries(fmt::format("{}/rotation/w", prefix)).pushBack( {stamp, quat.w} );
-
-    getSeries(fmt::format("{}/rotation/roll_deg", prefix)).pushBack(
-      {stamp, RPY.roll * RAD_TO_DEG} );
-    getSeries(fmt::format("{}/rotation/pitch_deg", prefix)).pushBack(
-      {stamp, RPY.roll * RAD_TO_DEG} );
-    getSeries(fmt::format("{}/rotation/yaw_deg", prefix)).pushBack(
-      {stamp, RPY.yaw * RAD_TO_DEG} );
+    parseTransform(new_prefix, timestamp);
   }
-
 }
 
-void ParserROS::parseDataTamerSchemasMsg(const PJ::MessageRef msg_buffer, double &timestamp)
+void ParserROS::parseDataTamerSchemasMsg(const std::string &prefix, double &timestamp)
 {
-  _deserializer->init( Span<const uint8_t>(msg_buffer.data(), msg_buffer.size()) );
-
   const size_t vector_size = _deserializer->deserializeUInt32();
 
   for(size_t i=0; i<vector_size; i++)
@@ -367,10 +429,8 @@ void ParserROS::parseDataTamerSchemasMsg(const PJ::MessageRef msg_buffer, double
   }
 }
 
-void ParserROS::parseDataTamerSnapshotMsg(const PJ::MessageRef msg_buffer, double &timestamp)
+void ParserROS::parseDataTamerSnapshotMsg(const std::string &prefix, double &timestamp)
 {
-  _deserializer->init( Span<const uint8_t>(msg_buffer.data(), msg_buffer.size()) );
-
   DataTamerParser::SnapshotView snapshot;
 
   snapshot.timestamp = _deserializer->deserialize(BuiltinType::UINT64).convert<uint64_t>();

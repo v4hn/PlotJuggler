@@ -4,6 +4,7 @@
 //These messages are exact equivalents of ROS messages
 
 
+#include <array>
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -58,6 +59,15 @@ struct Vector3
   static const char* id() { return "geometry_msgs/Vector3"; }
 };
 
+struct Point
+{
+    double x;
+    double y;
+    double z;
+
+    static const char* id() { return "geometry_msgs/Point"; }
+};
+
 struct Quaternion
 {
   double x;
@@ -79,7 +89,7 @@ RPY QuaternionToRPY(Quaternion q);
 
 struct Transform
 {
-  Vector3 translation;
+  Point translation;
   Quaternion rotation;
 
   static const char* id() { return "geometry_msgs/Transform"; }
@@ -87,11 +97,51 @@ struct Transform
 
 struct TransformStamped
 {
-  Header header;
-  std::string child_frame_id;
-  Transform transform;
+    Header header;
+    std::string child_frame_id;
+    Transform transform;
 
-  static const char* id() { return "geometry_msgs/TransformStamped"; }
+    static const char* id() { return "geometry_msgs/TransformStamped"; }
+};
+
+struct Pose
+{
+    Vector3 position;
+    Quaternion orientation;
+
+    static const char* id() { return "geometry_msgs/Pose"; }
+};
+
+struct PoseStamped
+{
+    Header header;
+    Pose pose;
+
+    static const char* id() { return "geometry_msgs/PoseStamped"; }
+};
+
+struct PoseWithCovariance
+{
+    Pose pose;
+    std::array<double, 36> covariance;
+
+    static const char* id() { return "geometry_msgs/PoseWithCovariance"; }
+};
+
+struct Twist
+{
+    Vector3  linear;
+    Vector3  angular;
+
+    static const char* id() { return "geometry_msgs/Twist"; }
+};
+
+struct TwistWithCovariance
+{
+    Twist twist;
+    std::array<double, 36> covariance;
+
+    static const char* id() { return "geometry_msgs/TwistWithCovariance"; }
 };
 
 struct TFMessage
@@ -100,6 +150,30 @@ struct TFMessage
 
   static const char* id() { return "tf2_msgs/TFMessage"; }
 };
+//--------------------
+
+struct Imu
+{
+    Header header;
+    Quaternion orientation;
+    std::array<double, 9> orientation_covariance;
+    Vector3 angular_velocity;
+    std::array<double, 9> angular_velocity_covariance;
+    Vector3 linear_acceleration;
+    std::array<double, 9> linear_acceleration_covariance;
+
+    static const char* id() { return "sensor_msgs/Imu"; }
+};
+//--------------------
+struct Odometry
+{
+    Header header;
+    PoseWithCovariance pose;
+    TwistWithCovariance twist;
+
+    static const char* id() { return "nav_msgs/Odometry"; }
+};
+
 //--------------------
 
 struct JointState

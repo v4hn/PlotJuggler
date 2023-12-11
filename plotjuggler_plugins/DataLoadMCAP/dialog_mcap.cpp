@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QElapsedTimer>
 
 const QString DialogMCAP::prefix = "DialogLoadMCAP::";
 
