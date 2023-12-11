@@ -243,16 +243,5 @@ bool Parser::deserialize(Span<const uint8_t> buffer, FlatMessage* flat_container
   return entire_message_parse;
 }
 
-void CreateRenamedValues(const FlatMessage& flat_msg, RenamedValues& renamed)
-{
-  /*  renamed.resize(flat_msg.value.size());
-    for (size_t i = 0; i < flat_msg.value.size(); i++)
-    {
-      const auto& in = flat_msg.value[i];
-      auto& out = renamed[i];
-      in.first.toStr(out.first);
-      out.second = in.second.convert<double>();
-    }*/
-}
 
 }  // namespace RosMsgParser

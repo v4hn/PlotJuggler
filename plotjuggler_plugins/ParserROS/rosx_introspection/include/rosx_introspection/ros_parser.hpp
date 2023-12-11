@@ -188,7 +188,6 @@ private:
 
 typedef std::vector<std::pair<std::string, double>> RenamedValues;
 
-void CreateRenamedValues(const FlatMessage& flat_msg, RenamedValues& renamed);
 
 template <class DeserializerT>
 class ParsersCollection

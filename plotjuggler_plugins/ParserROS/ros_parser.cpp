@@ -22,6 +22,7 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
       clampLargeArray() ? Parser::KEEP_LARGE_ARRAYS : Parser::DISCARD_LARGE_ARRAYS;
 
   _parser.setMaxArrayPolicy(policy, maxArraySize());
+  _has_header = _parser.getSchema()->root_msg->field(0).type().baseName() == "std_msgs/Header";
 
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -82,6 +83,21 @@ bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double& timest
   }
 
   _parser.deserialize(serialized_msg, &_flat_msg, _deserializer.get());
+
+  if(_has_header && this->useEmbeddedTimestamp())
+  {
+    if(_deserializer->isROS2())
+    {
+      auto sec = _flat_msg.value[0].second.convert<double>();
+      auto nsec = _flat_msg.value[1].second.convert<double>();
+      timestamp = sec + 1e-9*nsec;
+    }
+    else {
+      auto sec = _flat_msg.value[1].second.convert<double>();
+      auto nsec = _flat_msg.value[2].second.convert<double>();
+      timestamp = sec + 1e-9*nsec;
+    }
+  }
 
   std::string series_name;
 

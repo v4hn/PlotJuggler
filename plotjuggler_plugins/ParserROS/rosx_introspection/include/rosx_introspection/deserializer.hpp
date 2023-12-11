@@ -26,6 +26,8 @@ public:
     reset();
   }
 
+  virtual bool isROS2() const = 0;
+
   virtual ~Deserializer() = default;
 
   // move the memory pointer
@@ -62,6 +64,8 @@ class ROS_Deserializer : public Deserializer
 {
 public:
   Variant deserialize(BuiltinType type) override;
+
+  bool isROS2() const override { return false; }
 
   void deserializeString(std::string& dst) override;
 
@@ -114,6 +118,8 @@ public:
   void jump(size_t bytes) override;
 
   virtual void reset() override;
+
+  bool isROS2() const override { return true; }
 
 protected:
   std::shared_ptr<eprosima::fastcdr::FastBuffer> _cdr_buffer;

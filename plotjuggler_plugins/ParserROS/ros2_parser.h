@@ -6,9 +6,7 @@
 #include <QDebug>
 #include <string>
 
-#include "rosx_introspection/ros_parser.hpp"
 #include "ros_parser.h"
-#include "PlotJuggler/fmt/format.h"
 
 using namespace PJ;
 
