@@ -101,7 +101,7 @@ void DialogMCAP::accept()
 
   settings.setValue(prefix + "clamp", clamp_checked);
   settings.setValue(prefix + "max_array", max_array);
-  settings.setValue(prefix + "use_timestamp", max_array);
+  settings.setValue(prefix + "use_timestamp", use_timestamp);
 
   QItemSelectionModel* select = ui->tableWidget->selectionModel();
   QStringList selected_topics;

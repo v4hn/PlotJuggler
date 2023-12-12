@@ -96,17 +96,19 @@ bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double& timest
 
   if(_has_header && this->useEmbeddedTimestamp())
   {
+    double ts = 0;
     if(_deserializer->isROS2())
     {
       auto sec = _flat_msg.value[0].second.convert<double>();
       auto nsec = _flat_msg.value[1].second.convert<double>();
-      timestamp = sec + 1e-9*nsec;
+      ts = sec + 1e-9*nsec;
     }
     else {
       auto sec = _flat_msg.value[1].second.convert<double>();
       auto nsec = _flat_msg.value[2].second.convert<double>();
-      timestamp = sec + 1e-9*nsec;
+      ts = sec + 1e-9*nsec;
     }
+    timestamp = (ts > 0) ? ts : timestamp;
   }
 
   std::string series_name;
@@ -150,9 +152,10 @@ Msg::Header ParserROS::readHeader(double& timestamp)
   header.stamp.sec = _deserializer->deserializeUInt32();
   header.stamp.nanosec = _deserializer->deserializeUInt32();
 
-  if (useEmbeddedTimestamp())
+  const double ts = header.stamp.toSec();
+  if (useEmbeddedTimestamp() && ts > 0)
   {
-    timestamp = double(header.stamp.sec) + 1e-9 * double(header.stamp.nanosec);
+    timestamp = ts;
   }
   _deserializer->deserializeString(header.frame_id);
 

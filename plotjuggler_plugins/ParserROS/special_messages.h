@@ -18,7 +18,7 @@ struct Time
 
   double toSec() const
   {
-  return double(sec) + double(nanosec)*1e-9;
+    return double(sec) + double(nanosec)*1e-9;
   }
 };
 
