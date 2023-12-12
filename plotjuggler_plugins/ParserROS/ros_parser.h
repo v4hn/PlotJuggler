@@ -67,15 +67,14 @@ inline void ParserROS::parseCovariance(const std::string& prefix, double& timest
   std::array<double, N * N> cov;
   for (auto& val : cov)
   {
-    _deserializer->deserialize(RosMsgParser::FLOAT64).convert<double>();
+    val = _deserializer->deserialize(RosMsgParser::FLOAT64).convert<double>();
   }
   for (int i = 0; i < N; i++)
   {
     for (int j = i; j < N; j++)
     {
       const size_t index = i * N + j;
-      getSeries(fmt::format("{}[{};{}]", prefix, i, j))
-          .pushBack({ timestamp, cov[index] });
+      getSeries(fmt::format("{}[{};{}]", prefix, i, j)).pushBack({ timestamp, cov[index] });
     }
   }
 }

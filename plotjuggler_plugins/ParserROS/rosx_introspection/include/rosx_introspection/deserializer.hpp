@@ -34,18 +34,18 @@ public:
   virtual void jump(size_t bytes) = 0;
 
   // deserialize the current pointer into a variant (not a string)
-  virtual Variant deserialize(BuiltinType type) = 0;
+  [[nodiscard]] virtual Variant deserialize(BuiltinType type) = 0;
 
-  virtual Span<const uint8_t> deserializeByteSequence() = 0;
+  [[nodiscard]] virtual Span<const uint8_t> deserializeByteSequence() = 0;
 
   // deserialize the current pointer into a string
   virtual void deserializeString(std::string& out) = 0;
 
-  virtual uint32_t deserializeUInt32() = 0;
+  [[nodiscard]] virtual uint32_t deserializeUInt32() = 0;
 
-  virtual const uint8_t* getCurrentPtr() const = 0;
+  [[nodiscard]] virtual const uint8_t* getCurrentPtr() const = 0;
 
-  virtual size_t bytesLeft() const
+  [[nodiscard]] virtual size_t bytesLeft() const
   {
     return _buffer.size() - (getCurrentPtr() - _buffer.data());
   }
