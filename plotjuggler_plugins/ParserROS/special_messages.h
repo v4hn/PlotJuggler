@@ -3,7 +3,6 @@
 
 //These messages are exact equivalents of ROS messages
 
-
 #include <array>
 #include <vector>
 #include <string>
@@ -207,6 +206,25 @@ struct DataTamerSnapshot
   static const char* id() { return "data_tamer_msgs/Snapshot"; }
 };
 
+//--------------------
+
+struct PalStatisticsNames
+{
+  Header header;
+  std::vector<std::string> names;
+  uint32_t names_version;
+
+  static const char* id() { return "pal_statistics_msgs/StatisticsNames"; }
+};
+
+struct PalStatisticsValues
+{
+  Header header;
+  std::vector<double> names;
+  uint32_t names_version;
+
+  static const char* id() { return "pal_statistics_msgs/StatisticsValues"; }
+};
 }
 
 #endif // SPECIAL_MESSAGES_H

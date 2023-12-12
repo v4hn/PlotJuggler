@@ -3,8 +3,8 @@
 
 #include "PlotJuggler/fmt/core.h"
 #include "PlotJuggler/messageparser_base.h"
-#include "PlotJuggler/special_messages.h"
 #include "rosx_introspection/ros_parser.hpp"
+#include "special_messages.h"
 
 class ParserROS : public PJ::MessageParser
 {
@@ -23,7 +23,8 @@ protected:
   RosMsgParser::FlatMessage _flat_msg;
   std::string _topic;
 
-  PJ::Msg::Header parseHeader(const std::string& prefix, double& timestamp);
+  PJ::Msg::Header readHeader(double& timestamp);
+  void parseHeader(const std::string& prefix, double& timestamp);
 
   template <size_t N>
   void parseCovariance(const std::string& prefix, double& timestamp);
@@ -49,8 +50,11 @@ protected:
   void parseJointStateMsg(const std::string& prefix, double& timestamp);
   void parseTF2Msg(const std::string& prefix, double& timestamp);
 
-  void parseDataTamerSchemasMsg(const std::string& prefix, double& timestamp);
-  void parseDataTamerSnapshotMsg(const std::string& prefix, double& timestamp);
+  void parseDataTamerSchemas(const std::string& prefix, double& timestamp);
+  void parseDataTamerSnapshot(const std::string& prefix, double& timestamp);
+
+  void parsePalStatisticsNames(const std::string& prefix, double& timestamp);
+  void parsePalStatisticsValues(const std::string& prefix, double& timestamp);
 
   std::function<void(const std::string& prefix, double&)> _customized_parser;
 

@@ -40,11 +40,11 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
   }
   else if (Msg::DataTamerSchemas::id() == type_name)
   {
-    _customized_parser = std::bind(&ParserROS::parseDataTamerSchemasMsg, this, _1, _2);
+    _customized_parser = std::bind(&ParserROS::parseDataTamerSchemas, this, _1, _2);
   }
   else if (Msg::DataTamerSnapshot::id() == type_name)
   {
-    _customized_parser = std::bind(&ParserROS::parseDataTamerSnapshotMsg, this, _1, _2);
+    _customized_parser = std::bind(&ParserROS::parseDataTamerSnapshot, this, _1, _2);
   }
   else if (Msg::Imu::id() == type_name)
   {
@@ -69,6 +69,16 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
   else if (Msg::TransformStamped::id() == type_name)
   {
     _customized_parser = std::bind(&ParserROS::parseTransformStamped, this, _1, _2);
+  }
+  else if (Msg::PalStatisticsNames::id() == type_name ||
+           type_name == "plotjuggler_msgs/StatisticsNames")
+  {
+    _customized_parser = std::bind(&ParserROS::parsePalStatisticsNames, this, _1, _2);
+  }
+  else if (Msg::PalStatisticsValues::id() == type_name  ||
+           type_name == "plotjuggler_msgs/StatisticsValues")
+  {
+    _customized_parser = std::bind(&ParserROS::parsePalStatisticsValues, this, _1, _2);
   }
 }
 
@@ -128,12 +138,11 @@ void ParserROS::setLargeArraysPolicy(bool clamp, unsigned max_size)
 
 //------------------------------------------------------------------------
 
-Msg::Header ParserROS::parseHeader(const std::string& prefix, double& timestamp)
+Msg::Header ParserROS::readHeader(double& timestamp)
 {
   Msg::Header header;
-  const bool is_ros1 = dynamic_cast<ROS_Deserializer*>(_deserializer.get()) != nullptr;
   // only ROS1 as the files header.seq
-  if (is_ros1)
+  if (dynamic_cast<ROS_Deserializer*>(_deserializer.get()) != nullptr)
   {
     header.seq = _deserializer->deserializeUInt32();
   }
@@ -141,23 +150,27 @@ Msg::Header ParserROS::parseHeader(const std::string& prefix, double& timestamp)
   header.stamp.sec = _deserializer->deserializeUInt32();
   header.stamp.nanosec = _deserializer->deserializeUInt32();
 
-  const double ts = double(header.stamp.sec) + 1e-9 * double(header.stamp.nanosec);
   if (useEmbeddedTimestamp())
   {
-    timestamp = ts;
+    timestamp = double(header.stamp.sec) + 1e-9 * double(header.stamp.nanosec);
   }
-
   _deserializer->deserializeString(header.frame_id);
-
-  getSeries(prefix + "/header/stamp").pushBack({ timestamp, ts });
-  if (is_ros1)
-  {
-    getSeries(prefix + "/header/seq").pushBack({ timestamp, double(header.seq) });
-  }
-  getStringSeries(prefix + "/header/frame_id").pushBack({ timestamp, header.frame_id });
 
   return header;
 }
+
+void ParserROS::parseHeader(const std::string& prefix, double& timestamp)
+{
+  const auto header = readHeader(timestamp);
+
+  getSeries(prefix + "/header/stamp").pushBack({ timestamp, header.stamp.toSec() });
+  getStringSeries(prefix + "/header/frame_id").pushBack({ timestamp, header.frame_id });
+  if (dynamic_cast<ROS_Deserializer*>(_deserializer.get()) != nullptr)
+  {
+    getSeries(prefix + "/header/seq").pushBack({ timestamp, double(header.seq) });
+  }
+}
+
 
 void ParserROS::parseVector3(const std::string& prefix, double& timestamp)
 {
@@ -409,7 +422,7 @@ void ParserROS::parseTF2Msg(const std::string& prefix, double& timestamp)
 
   for (size_t i = 0; i < transform_size; i++)
   {
-    auto header = parseHeader(prefix, timestamp);
+    const auto header = readHeader(timestamp);
     std::string child_frame_id;
     _deserializer->deserializeString(child_frame_id);
 
@@ -426,7 +439,7 @@ void ParserROS::parseTF2Msg(const std::string& prefix, double& timestamp)
   }
 }
 
-void ParserROS::parseDataTamerSchemasMsg(const std::string& prefix, double& timestamp)
+void ParserROS::parseDataTamerSchemas(const std::string& prefix, double& timestamp)
 {
   const size_t vector_size = _deserializer->deserializeUInt32();
 
@@ -445,7 +458,7 @@ void ParserROS::parseDataTamerSchemasMsg(const std::string& prefix, double& time
   }
 }
 
-void ParserROS::parseDataTamerSnapshotMsg(const std::string& prefix, double& timestamp)
+void ParserROS::parseDataTamerSnapshot(const std::string& prefix, double& timestamp)
 {
   DataTamerParser::SnapshotView snapshot;
 
@@ -477,4 +490,45 @@ void ParserROS::parseDataTamerSnapshotMsg(const std::string& prefix, double& tim
   };
 
   DataTamerParser::ParseSnapshot(dt_schema, snapshot, callback);
+}
+
+static std::unordered_map<uint32_t, std::vector<std::string>> _pal_statistics_names;
+
+void ParserROS::parsePalStatisticsNames(const std::string &prefix, double &timestamp)
+{
+  const auto header = readHeader(timestamp);
+  std::vector<std::string> names;
+  const size_t vector_size = _deserializer->deserializeUInt32();
+  names.resize(vector_size);
+  for(auto& name: names)
+  {
+    _deserializer->deserializeString(name);
+  }
+  uint32_t names_version = _deserializer->deserializeUInt32();
+  _pal_statistics_names[names_version] = std::move(names);
+}
+
+void ParserROS::parsePalStatisticsValues(const std::string &prefix, double &timestamp)
+{
+  const auto header = readHeader(timestamp);
+  std::vector<double> values;
+  const size_t vector_size = _deserializer->deserializeUInt32();
+  values.resize(vector_size);
+
+  for(auto& value: values)
+  {
+    value = _deserializer->deserialize(BuiltinType::FLOAT64).convert<double>();
+  }
+  uint32_t names_version = _deserializer->deserializeUInt32();
+  auto it = _pal_statistics_names.find(names_version);
+  if( it != _pal_statistics_names.end() )
+  {
+    const auto& names = it->second;
+    const size_t N = std::min(names.size(), values.size());
+    for(size_t i=0; i<N; i++)
+    {
+      auto& series = getSeries(fmt::format("{}/{}", prefix, names[i]));
+      series.pushBack({timestamp, values[i]});
+    }
+  }
 }
