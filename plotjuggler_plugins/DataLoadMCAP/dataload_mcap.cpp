@@ -136,7 +136,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     return false;
   }
 
-  auto dialog_params = dialog.getParams();
+  const auto dialog_params = dialog.getParams();
 
   std::unordered_set<int> enabled_channels;
 
@@ -144,6 +144,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
   {
     parser->setLargeArraysPolicy(dialog_params.clamp_large_arrays,
                                  dialog_params.max_array_size);
+      parser->enableEmbeddedTimestamp(dialog_params.use_timestamp);
 
     QString topic_name = QString::fromStdString(channels[channel_id]->topic);
     if (dialog_params.selected_topics.contains(topic_name))
