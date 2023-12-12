@@ -128,12 +128,6 @@ parts:
         sed -i "s|plotjuggler )|)|" plotjuggler-ros-plugins/CMakeLists.txt
         sed -i "/find_package(catkin/a find_package(plotjuggler REQUIRED)" plotjuggler-ros-plugins/CMakeLists.txt
 
-        # https://github.com/ros/catkin/issues/1170
-        sed -i 's|<build_type condition="\$ROS_VERSION == 2">ament_cmake</build_type>|<build_type condition="\$ROS_VERSION == 1">catkin</build_type>|' plotjuggler_msgs/package.xml
-
-        # add plotjuggler_LIBRARIES link dependency as public
-        sed -i 's/ros_type_introspection_static/ros_type_introspection_static\n PUBLIC\n ${plotjuggler_LIBRARIES}/' plotjuggler-ros-plugins/plugins/CMakeLists.txt
-
         # Qt dependencies are managed by the kde neon-extension
         sed -i '/qt/d' plotjuggler-ros-plugins/package.xml
       fi
