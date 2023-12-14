@@ -57,6 +57,7 @@ parts:
       - libprotobuf-dev
       - libzmq5
       - libzstd1
+      - libpsm-infinipath1
     override-pull: |
         snapcraftctl pull
 
