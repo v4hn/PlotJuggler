@@ -103,4 +103,8 @@ parts:
         # Qt dependencies are managed by the kde neon-extension
         sed -i '/qt/d' plotjuggler-ros-plugins/package.xml
       fi
-
+  local-file:
+    plugin: dump
+    source: snap/local/
+    organize:
+      'launcher-plotjuggler*': usr/bin/
