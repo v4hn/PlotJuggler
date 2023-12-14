@@ -247,9 +247,6 @@ parts:
         # prevent rosdep from installing plotjuggler
         sed -i "s|<depend>plotjuggler</depend>||" plotjuggler-ros-plugins/package.xml
 
-        # add plotjuggler_LIBRARIES link
-        sed -i '/\${Qt5Xml_LIBRARIES}/a ${plotjuggler_LIBRARIES}' plotjuggler-ros-plugins/plugins/CMakeLists.txt
-
         # Qt dependencies are managed by the kde neon-extension
         sed -i '/qt/d' plotjuggler-ros-plugins/package.xml
       fi
