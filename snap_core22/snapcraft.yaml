@@ -10,7 +10,6 @@ description: |
 
     $ plotjuggler
 
-  launching PlotJuggler with ROS 2 plugins by default.
 
 issues: https://github.com/facontidavide/plotjuggler/issues
 source-code: https://github.com/facontidavide/plotjuggler
