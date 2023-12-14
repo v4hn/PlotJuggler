@@ -20,7 +20,7 @@ jobs:
       with:
         # full history for latest tag name
         fetch-depth: 0
-    - run: rm -r snap && mv snap_core20 snap
+    - run: mv snap_core20 snap
     - uses: snapcore/action-build@v1
       id: build-snap20
 
