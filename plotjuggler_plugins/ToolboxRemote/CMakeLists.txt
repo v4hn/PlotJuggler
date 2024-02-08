@@ -1,5 +1,14 @@
+if(BUILDING_WITH_CONAN)
+    find_package(zstd CONFIG REQUIRED)
+    set(Zstd_LIBRARIES zstd::libzstd_static)
+    set(Zstd_FOUND ON)
+else()
+    find_package(Zstd REQUIRED)
+endif()
+
 add_definitions(${QT_DEFINITIONS})
 add_definitions(-DQT_PLUGIN)
+include_directories(./)
 
 find_package(Qt5 QUIET COMPONENTS WebSockets)
 
@@ -10,12 +19,13 @@ QT5_WRAP_UI ( UI_SRC
 add_library(mcap_api STATIC
     mcap_api/mcap_protocol.cpp
     mcap_client/mcap_client.cpp)
+target_include_directories(mcap_api PUBLIC
+    $<BUILD_INTERFACE:${Zstd_INCLUDE_DIRS}>)
 
 target_link_libraries(mcap_api PUBLIC Qt5::WebSockets)
 
 target_include_directories(mcap_api PUBLIC ${PROJECT_SOURCE_DIR}/3rdparty)
 
-include_directories(.)
 
 add_subdirectory(mcap_api)
 add_subdirectory(mcap_client)
