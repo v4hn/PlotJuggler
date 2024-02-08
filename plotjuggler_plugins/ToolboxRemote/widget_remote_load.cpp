@@ -11,7 +11,7 @@ RemoteLoad::RemoteLoad(QWidget *parent) :
   ui(new Ui::RemoteLoad)
 {
   ui->setupUi(this);
-  ui->linePort->setValidator( new QIntValidator(1, 9999, this) );
+  ui->linePort->setValidator( new QIntValidator(1, 65535, this) );
 
   QHeaderView* header = ui->tableWidget->horizontalHeader();
   header->setSectionResizeMode(0, QHeaderView::Stretch);
