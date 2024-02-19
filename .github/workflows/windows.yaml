@@ -24,6 +24,9 @@ jobs:
         id: conan
         uses: turtlebrowser/get-conan@main
       
+      - name: Conan profile
+        run: conan profile detect
+      
       - name: Cache Conan
         uses: actions/cache@v3
         with:
