@@ -1,5 +1,5 @@
 if(BUILDING_WITH_CONAN)
-    find_package(zstd CONFIG REQUIRED)
+    find_package(zstd REQUIRED)
     set(Zstd_LIBRARIES zstd::libzstd_static)
     set(Zstd_FOUND ON)
 else()

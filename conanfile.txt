@@ -4,6 +4,7 @@
  zeromq/4.3.5
  zstd/1.5.5
  zlib/1.2.13
+ arrow/15.0.0
 
  [options]
  zeromq*:shared=False
@@ -11,3 +12,7 @@
  [generators]
  CMakeDeps
  CMakeToolchain
+ 
+ [tool_requires]
+ cmake/3.28.1
+
