@@ -181,7 +181,7 @@ void ToolboxRemote::onFileStatisticsReceived(const mcap_api::Statistics &statist
                          channel.schema_data.size());
 
       auto parser = parser_factory->createParser(channel.topic,
-                                                 channel.schema_encoding,
+                                                 channel.schema_name,
                                                  schema,
                                                  _plot_data);
       _parsers_by_channel.insert( {channel.id, parser} );
