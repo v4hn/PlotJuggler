@@ -17,6 +17,7 @@ RemoteLoad::RemoteLoad(QWidget *parent) :
   header->setSectionResizeMode(0, QHeaderView::Stretch);
   header->setSectionResizeMode(1, QHeaderView::Fixed);
   header->setSectionResizeMode(2, QHeaderView::Fixed);
+  header->setSectionResizeMode(3, QHeaderView::Fixed);
 
   connect (ui->buttonBox, &QDialogButtonBox::accepted, this, &RemoteLoad::accepted);
   connect (ui->buttonBox, &QDialogButtonBox::rejected, this, &RemoteLoad::rejected);
@@ -70,16 +71,20 @@ void RemoteLoad::setChannels(const std::vector<mcap_api::ChannelInfo> &channels)
     auto topic_name = new QTableWidgetItem(QString::fromStdString(channel.topic));
     ui->tableWidget->setItem(0, 0, topic_name);
 
+    auto type = new QTableWidgetItem(QString::fromStdString(channel.schema_name));
+    ui->tableWidget->setItem(0, 1, type);
+
     auto schema_encoding = new QTableWidgetItem(QString::fromStdString(channel.schema_encoding));
-    ui->tableWidget->setItem(0, 1, schema_encoding);
+    ui->tableWidget->setItem(0, 2, schema_encoding);
 
     auto msg_count = new QTableWidgetItem(QString::number(channel.message_count));
-    ui->tableWidget->setItem(0, 2, msg_count);
+    ui->tableWidget->setItem(0, 3, msg_count);
   }
 
   ui->tableWidget->sortByColumn(0);
   ui->tableWidget->resizeColumnToContents(1);
   ui->tableWidget->resizeColumnToContents(2);
+  ui->tableWidget->resizeColumnToContents(3);
 }
 
 void RemoteLoad::clear()

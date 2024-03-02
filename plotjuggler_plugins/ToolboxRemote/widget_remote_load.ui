@@ -409,7 +409,7 @@
          <bool>false</bool>
         </attribute>
         <attribute name="horizontalHeaderDefaultSectionSize">
-         <number>150</number>
+         <number>120</number>
         </attribute>
         <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
          <bool>true</bool>
@@ -427,12 +427,17 @@
         </column>
         <column>
          <property name="text">
-          <string>Schema Encoding</string>
+          <string>Type</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string>Message count</string>
+          <string>Encoding</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Msg count</string>
          </property>
         </column>
        </widget>

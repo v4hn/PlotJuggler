@@ -1,8 +1,6 @@
 #include "toolbox_remote.h"
 
 #include <QMessageBox>
-#include <array>
-#include <math.h>
 
 #define MCAP_IMPLEMENTATION
 #include "mcap/writer.hpp"
@@ -278,7 +276,7 @@ bool ToolboxRemote::saveData(QString filepath, QStringList topics)
 {
   _mcap_writer = std::make_shared<mcap::McapWriter>();
 
-  auto options = mcap::McapWriterOptions("MCAP PlotJuggler Cache");
+  auto options = mcap::McapWriterOptions(_statistics.profile);
   const auto res = _mcap_writer->open(filepath.toStdString(), options);
   if (!res.ok())
   {
