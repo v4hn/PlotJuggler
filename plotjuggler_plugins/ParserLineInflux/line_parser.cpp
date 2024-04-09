@@ -58,7 +58,7 @@ public:
       {
         const auto field_parts = field.split('=');
         const auto name = field_parts[0].toLocal8Bit();
-        auto value = field_parts[1];
+        auto value = field_parts[1].toLocal8Bit();
 
         key = prefix;
         key += '/';
@@ -67,8 +67,7 @@ public:
         if (value.startsWith('"') && value.endsWith('"'))
         {
           auto& data = _plot_data.getOrCreateStringSeries(key);
-          data.pushBack(
-              { ts_sec, std::string(ToChar(value.data() + 1), value.size() - 2) });
+          data.pushBack({ ts_sec, StringRef(value.data() + 1, value.size() - 2) });
         }
         else if (value == "t" || value == "T" || value == "true" || value == "True" ||
                  value == "TRUE")
