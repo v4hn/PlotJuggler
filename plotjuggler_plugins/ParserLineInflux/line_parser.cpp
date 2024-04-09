@@ -6,10 +6,8 @@ using namespace PJ;
 class MsgParserImpl : public MessageParser
 {
 public:
-  MsgParserImpl(const std::string& topic_name,
-                const std::string& type_name,
-                const std::string&,
-                PJ::PlotDataMapRef& data)
+  MsgParserImpl(const std::string& topic_name, const std::string& type_name,
+                const std::string&, PJ::PlotDataMapRef& data)
     : MessageParser(topic_name, data), topic_name_(topic_name)
   {
   }
@@ -23,23 +21,26 @@ public:
     std::string key;
     std::string prefix;
     // Obtain the key name from measurement name and tags
-    for(auto line: str.splitRef('\n', Qt::SkipEmptyParts))
+    for (auto line : str.splitRef('\n', Qt::SkipEmptyParts))
     {
       auto parts = line.split(' ', Qt::SkipEmptyParts);
-      if(parts.size() != 2 && parts.size() != 3) {
+      if (parts.size() != 2 && parts.size() != 3)
+      {
         continue;
       }
       const auto tags = parts[0].split(',', Qt::SkipEmptyParts);
       const auto fields = parts[1].split(',', Qt::SkipEmptyParts);
-      if(tags.size() < 1 || fields.size() < 1) {
+      if (tags.size() < 1 || fields.size() < 1)
+      {
         continue;
       }
       uint64_t timestamp = 0;
-      if(parts.size() == 3)
+      if (parts.size() == 3)
       {
         timestamp = parts[2].toULongLong();
       }
-      else {
+      else
+      {
         using namespace std::chrono;
         auto now = steady_clock::now();
         timestamp = duration_cast<nanoseconds>(now.time_since_epoch()).count();
@@ -47,13 +48,13 @@ public:
       const double ts_sec = double(timestamp) * 1e-9;
 
       prefix = topic_name_;
-      for(auto tag: tags)
+      for (auto tag : tags)
       {
         prefix += '/';
         auto tag_str = tag.toLocal8Bit();
         prefix.append(tag_str.data(), tag_str.size());
       }
-      for(auto field: fields)
+      for (auto field : fields)
       {
         const auto field_parts = field.split('=');
         const auto name = field_parts[0].toLocal8Bit();
@@ -63,33 +64,37 @@ public:
         key += '/';
         key.append(name.data(), name.size());
 
-        if(value.startsWith('"') && value.endsWith('"'))
+        if (value.startsWith('"') && value.endsWith('"'))
         {
           auto& data = _plot_data.getOrCreateStringSeries(key);
-          data.pushBack({ts_sec, std::string(ToChar(value.data()+1), value.size()-2)});
+          data.pushBack(
+              { ts_sec, std::string(ToChar(value.data() + 1), value.size() - 2) });
         }
-        else if(value == "t" || value == "T" || value == "true" || value == "True" || value == "TRUE")
+        else if (value == "t" || value == "T" || value == "true" || value == "True" ||
+                 value == "TRUE")
         {
           auto& data = _plot_data.getOrCreateNumeric(key);
-          data.pushBack({ts_sec, 1.0});
+          data.pushBack({ ts_sec, 1.0 });
         }
-        else if(value == "f" || value == "F" || value == "false" || value == "False" || value == "FALSE")
+        else if (value == "f" || value == "F" || value == "false" || value == "False" ||
+                 value == "FALSE")
         {
           auto& data = _plot_data.getOrCreateNumeric(key);
-          data.pushBack({ts_sec, 0.0});
+          data.pushBack({ ts_sec, 0.0 });
         }
-        else {
+        else
+        {
           bool ok = false;
           // remove last character if there is an integer suffix
-          if(value.endsWith('i') || value.endsWith('u'))
+          if (value.endsWith('i') || value.endsWith('u'))
           {
             value.chop(1);
           }
           double num = value.toDouble(&ok);
-          if(ok)
+          if (ok)
           {
             auto& data = _plot_data.getOrCreateNumeric(key);
-            data.pushBack({ts_sec, num});
+            data.pushBack({ ts_sec, num });
           }
         }
       }
@@ -98,14 +103,13 @@ public:
   }
 
 private:
-
   std::string topic_name_;
 };
 
 MessageParserPtr ParserLine::createParser(const std::string& topic_name,
-                                               const std::string& type_name,
-                                               const std::string& schema,
-                                               PJ::PlotDataMapRef& data)
+                                          const std::string& type_name,
+                                          const std::string& schema,
+                                          PJ::PlotDataMapRef& data)
 {
   return std::make_shared<MsgParserImpl>(topic_name, type_name, schema, data);
 }
