@@ -21,15 +21,15 @@ public:
     std::string key;
     std::string prefix;
     // Obtain the key name from measurement name and tags
-    for (auto line : str.splitRef('\n', Qt::SkipEmptyParts))
+    for (auto line : str.splitRef('\n', PJ::SkipEmptyParts))
     {
-      auto parts = line.split(' ', Qt::SkipEmptyParts);
+      auto parts = line.split(' ', PJ::SkipEmptyParts);
       if (parts.size() != 2 && parts.size() != 3)
       {
         continue;
       }
-      const auto tags = parts[0].split(',', Qt::SkipEmptyParts);
-      const auto fields = parts[1].split(',', Qt::SkipEmptyParts);
+      const auto tags = parts[0].split(',', PJ::SkipEmptyParts);
+      const auto fields = parts[1].split(',', PJ::SkipEmptyParts);
       if (tags.size() < 1 || fields.size() < 1)
       {
         continue;
