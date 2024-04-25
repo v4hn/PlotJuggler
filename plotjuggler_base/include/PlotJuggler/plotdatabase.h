@@ -15,7 +15,9 @@
 #include <cstdlib>
 #include <unordered_map>
 #include <optional>
+
 #include <QVariant>
+#include <QtGlobal>
 
 namespace PJ
 {
@@ -25,7 +27,7 @@ struct Range
   double max;
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
 const auto SkipEmptyParts = Qt::SkipEmptyParts;
 #else
 const auto SkipEmptyParts = QString::SkipEmptyParts;
