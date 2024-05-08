@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.9.2 (2024-05-08)
+------------------
 * Save NlohmannParser (JSON) settings (`#971 <https://github.com/facontidavide/PlotJuggler/issues/971>`_)
 * Fix infinite streaming buffer regression (`#953 <https://github.com/facontidavide/PlotJuggler/issues/953>`_)
   Co-authored-by: paul <paul@WorkLaptop>
