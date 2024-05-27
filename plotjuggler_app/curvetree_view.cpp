@@ -6,6 +6,7 @@
 
 #include "curvetree_view.h"
 #include "curvelist_panel.h"
+#include <QTimer>
 #include <QFontDatabase>
 #include <QObject>
 #include <QDebug>
@@ -68,6 +69,27 @@ CurveTreeView::CurveTreeView(CurveListPanel* parent)
       setFocusPolicy(Qt::ClickFocus);
     }
   });
+  _tooltip_timer = new QTimer(this);
+  connect(_tooltip_timer, &QTimer::timeout, this, [this]() {
+    if (_tooltip_item)
+    {
+      auto tooltip = _tooltip_item->data(0, CustomRoles::ToolTip);
+      if (tooltip.isValid())
+      {
+        QToolTip::showText(_tooltip_pos, tooltip.toString(), this, QRect(), 10000);
+      }
+    }
+  });
+  _tooltip_timer->start(100);
+}
+
+void CurveTreeView::clear()
+{
+  _tooltip_item = nullptr;
+  _tooltip_timer->stop();
+  QTreeWidget::clear();
+  _leaf_count = 0;
+  _hidden_count = 0;
 }
 
 void CurveTreeView::addItem(const QString& group_name, const QString& tree_name,
@@ -176,7 +198,6 @@ void CurveTreeView::refreshColumns()
   invisibleRootItem()->sortChildren(0, Qt::AscendingOrder);
   treeVisitor([&](QTreeWidgetItem* item) { item->sortChildren(0, Qt::AscendingOrder); });
   header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-  // TODO emit updateFilter();
 }
 
 std::vector<std::string> CurveTreeView::getSelectedNames()
@@ -286,16 +307,14 @@ bool CurveTreeView::eventFilter(QObject* object, QEvent* event)
     auto* item = itemAt(mouse_event->pos());
     if (item)
     {
-      auto tooltip = item->data(0, CustomRoles::ToolTip);
-      if (tooltip.isValid())
-      {
-        QToolTip::showText(mapToGlobal(mouse_event->pos()), tooltip.toString());
-      }
-      else
-      {
-        QToolTip::hideText();
-      }
+      _tooltip_pos = mapToGlobal(mouse_event->pos());
     }
+    _tooltip_item = item;
+  }
+
+  if (event->type() == QEvent::Leave)
+  {
+    _tooltip_item = nullptr;
   }
 
   bool ret = CurvesView::eventFilterBase(object, event);
@@ -336,6 +355,8 @@ void CurveTreeView::removeCurve(const QString& to_be_deleted)
     }
   };
 
+  // just in case
+  _tooltip_item = nullptr;
   treeVisitor(removeFunc);
 }
 
