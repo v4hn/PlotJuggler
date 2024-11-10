@@ -54,7 +54,7 @@ private:
   std::unordered_set<std::string> _topics_set;
   std::mutex _mutex;
   MosquittoConfig _config;
-  std::thread* _thread;
+  std::thread _thread;
 };
 
 #endif  // MQTT_CLIENT_H
