@@ -156,8 +156,8 @@ void CurveTracker::setPosition(const QPointF& position)
 
       QString line;
 
-	  QSettings settings;
-	  int prec = settings.value("Preferences::precision", 3).toInt();
+      QSettings settings;
+      int prec = settings.value("Preferences::precision", 3).toInt();
 
       if (_param == VALUE)
       {

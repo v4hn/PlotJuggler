@@ -268,7 +268,7 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
         default: {
         }
       }  // end switch
-    }  // end for column
+    }    // end for column
 
     os >> parquet::EndRow;
 

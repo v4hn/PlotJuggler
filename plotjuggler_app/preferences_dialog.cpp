@@ -98,8 +98,7 @@ void PreferencesDialog::on_buttonBox_accepted()
                     ui->checkBoxRememberColor->isChecked());
   settings.setValue("Preferences::use_plot_color_index",
                     ui->radioLocalColorIndex->isChecked());
-  settings.setValue("Preferences::precision",
-                    ui->comboBoxPrecision->currentIndex());
+  settings.setValue("Preferences::precision", ui->comboBoxPrecision->currentIndex());
   settings.setValue("Preferences::use_separator", ui->checkBoxSeparator->isChecked());
   settings.setValue("Preferences::use_opengl", ui->checkBoxOpenGL->isChecked());
   settings.setValue("Preferences::autozoom_visibility",

@@ -286,8 +286,8 @@ void CurveListPanel::refreshValues()
   auto default_foreground = _custom_view->palette().foreground();
 
   auto FormattedNumber = [](double value) {
-	QSettings settings;
-	int prec = settings.value("Preferences::precision", 3).toInt();
+    QSettings settings;
+    int prec = settings.value("Preferences::precision", 3).toInt();
     QString num_text = QString::number(value, 'f', prec);
     if (num_text.contains('.'))
     {
