@@ -17,14 +17,7 @@ jobs:
 
     steps:
       - name: Sync repository
-        uses: actions/checkout@v2
-
-      - name: Cache Qt
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: '${{ github.workspace }}/qt_installation/'
-          key: ${{ runner.os }}-QtCache
+        uses: actions/checkout@v4
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.13.0
@@ -32,6 +25,7 @@ jobs:
           version: '5.15.2'
           arch: 'win64_msvc2019_64'
           dir: '${{ github.workspace }}/qt_installation/'
+          cache: 'true'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Build Plotjuggler
