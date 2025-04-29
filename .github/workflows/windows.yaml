@@ -10,7 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         windows-version:
-          - 'windows-2019'
           - 'windows-latest'
     env:
       CXXFLAGS: /MP
