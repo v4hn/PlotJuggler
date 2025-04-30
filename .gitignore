@@ -70,3 +70,5 @@ _deps
 .cache
 /snap/*
 *.AppImage
+/linuxdeploy/*
+/linuxdeploy-plugin-qt/*

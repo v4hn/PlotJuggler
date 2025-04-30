@@ -93,12 +93,7 @@ QPixmap getFunnySplashscreen()
 
   auto getNum = []() {
     const int last_image_num = 94;
-    int n = rand() % (last_image_num + 2);
-    if (n > last_image_num)
-    {
-      n = 0;
-    }
-    return n;
+    return rand() % (last_image_num);
   };
   std::set<int> previous_set;
   std::list<int> previous_nums;
