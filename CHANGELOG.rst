@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.0 (2025-04-30)
+-------------------
 * Release 3.10 (`#1067 <https://github.com/facontidavide/PlotJuggler/issues/1067>`_)
 * statistics: add avg interval (`#979 <https://github.com/facontidavide/PlotJuggler/issues/979>`_)
 * Add parsing support for tsl messages (`#1043 <https://github.com/facontidavide/PlotJuggler/issues/1043>`_)
