@@ -2,6 +2,47 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Release 3.10 (`#1067 <https://github.com/facontidavide/PlotJuggler/issues/1067>`_)
+* statistics: add avg interval (`#979 <https://github.com/facontidavide/PlotJuggler/issues/979>`_)
+* Add parsing support for tsl messages (`#1043 <https://github.com/facontidavide/PlotJuggler/issues/1043>`_)
+  * first working version
+  * update clang format
+* Fix IPv6 multicast (`#1050 <https://github.com/facontidavide/PlotJuggler/issues/1050>`_)
+  * Ignore default AppImage build
+  * Fix IPv6 UDP multicast
+* Update macOS compile instructions (`#1058 <https://github.com/facontidavide/PlotJuggler/issues/1058>`_)
+* latest data_tamer
+* fix ParseIDL
+* Update Dockerfile
+* 3.10 (`#1041 <https://github.com/facontidavide/PlotJuggler/issues/1041>`_) refacto 3rdparty dependencies and fix MCAP plugin + build on MacOS
+* dataload_mcap: real progress bar and share mcap file path between plugins (`#1040 <https://github.com/facontidavide/PlotJuggler/issues/1040>`_)
+  * dataload_mcap: add mcap file path toUserDefined
+  Include the MCAP file path in PlotJuggler's user-defined data so
+  that other plugins can access and utilize it.
+  Co-authored-by: Michele Guzzinati <michele.guzzinati@hipert.it>
+  * dataload_mcap: add real progress bar
+  Add the real range of the progress bar during mcap loading, so users
+  can accurately track the real loading progress.
+  Co-authored-by: Michele Guzzinati <michele.guzzinati@hipert.it>
+  ---------
+  Co-authored-by: Michele Guzzinati <michele.guzzinati@hipert.it>
+* Rebased and pre-commit checked (`#951 <https://github.com/facontidavide/PlotJuggler/issues/951>`_)
+* linter
+* DataLoadMCAP: add support to mcap logTime (`#1037 <https://github.com/facontidavide/PlotJuggler/issues/1037>`_)
+  The DataLoadMCAP plugin support only the publishTime of the mcap
+  message. Add a radio button in the load dialog to select the
+  logTime or publishTime.
+* Feature: add float precision setting (`#1021 <https://github.com/facontidavide/PlotJuggler/issues/1021>`_)
+* fix(ulog): the index of the timestamp may be non-zero (`#1016 <https://github.com/facontidavide/PlotJuggler/issues/1016>`_)
+  The previous parsing assumed that the timestamp for a ulog data series
+  was always at index 0, which is often, but not necessarily the case. The
+  parser now store the correct index when parsing the definition.
+* fix broken parquet parsing when parquet file contains 'invalid' columns (`#1034 <https://github.com/facontidavide/PlotJuggler/issues/1034>`_)
+* Minor typo fixes (`#1027 <https://github.com/facontidavide/PlotJuggler/issues/1027>`_)
+* Contributors: Ahmet KÖKEN, Bryce Schober, Davide Faconti, Henrique Ferrolho, Jacob Dahl, Kevin M, Knut Hjorth, Luca Bartoli, PalmEmil, Sebastiano Taddei, Simon Sagmeister
+
 3.9.2 (2024-05-08)
 ------------------
 * Save NlohmannParser (JSON) settings (`#971 <https://github.com/facontidavide/PlotJuggler/issues/971>`_)
