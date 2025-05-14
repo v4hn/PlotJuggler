@@ -121,10 +121,27 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
   QElapsedTimer timer;
   timer.start();
 
+  struct FailedParserInfo
+  {
+    std::set<std::string> topics;
+    std::string error_message;
+  };
+
+  std::map<std::string, FailedParserInfo> parsers_blacklist;
+
   for (const auto& [channel_id, channel_ptr] : reader.channels())
   {
     channels.insert({ channel_id, channel_ptr });
     const auto& schema = mcap_schemas.at(channel_ptr->schemaId);
+
+    // check if this schema is in the blacklist
+    auto blacklist_it = parsers_blacklist.find(schema->name);
+    if (blacklist_it != parsers_blacklist.end())
+    {
+      blacklist_it->second.topics.insert(channel_ptr->topic);
+      continue;
+    }
+
     const auto& topic_name = channel_ptr->topic;
     std::string definition(reinterpret_cast<const char*>(schema->data.data()),
                            schema->data.size());
@@ -163,11 +180,41 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
       continue;
     }
 
-    auto& parser_factory = it->second;
-    auto parser =
-        parser_factory->createParser(topic_name, schema->name, definition, plot_data);
-    parsers_by_channel.insert({ channel_ptr->id, parser });
+    try
+    {
+      auto& parser_factory = it->second;
+      auto parser =
+          parser_factory->createParser(topic_name, schema->name, definition, plot_data);
+
+      parsers_by_channel.insert({ channel_ptr->id, parser });
+    }
+    catch (std::exception& e)
+    {
+      FailedParserInfo failed_parser_info;
+      failed_parser_info.error_message = e.what();
+      failed_parser_info.topics.insert(channel_ptr->topic);
+      parsers_blacklist.insert({ schema->name, failed_parser_info });
+    }
   };
+
+  // If any parser failed, show a message box with the error
+  if (!parsers_blacklist.empty())
+  {
+    QString error_message;
+    for (const auto& [schema_name, failed_parser_info] : parsers_blacklist)
+    {
+      error_message += QString("Schema: %1\n").arg(QString::fromStdString(schema_name));
+      error_message += QString("Error: %1\n")
+                           .arg(QString::fromStdString(failed_parser_info.error_message));
+      error_message += QString("Topics affected: \n");
+      for (const auto& topic : failed_parser_info.topics)
+      {
+        error_message += QString(" - %1\n").arg(QString::fromStdString(topic));
+      }
+      error_message += "------------------\n";
+    }
+    QMessageBox::warning(nullptr, "Parser Error", error_message);
+  }
 
   if (!info->plugin_config.hasChildNodes())
   {
