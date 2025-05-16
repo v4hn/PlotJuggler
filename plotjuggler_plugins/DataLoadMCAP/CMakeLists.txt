@@ -69,6 +69,7 @@ target_include_directories(DataLoadMCAP PRIVATE
 target_link_libraries(DataLoadMCAP PRIVATE
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Xml_LIBRARIES}
+    ${Qt5Concurrent_LIBRARIES}
     mcap
     plotjuggler_base )
 

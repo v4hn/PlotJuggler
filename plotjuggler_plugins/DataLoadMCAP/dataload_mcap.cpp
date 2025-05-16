@@ -16,6 +16,7 @@
 #include <QPushButton>
 #include <QElapsedTimer>
 #include <QStandardItemModel>
+#include <QtConcurrent>
 
 #include <set>
 
@@ -100,7 +101,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
   plot_data.addUserDefined("plotjuggler::mcap::file_path")
       ->second.pushBack({ 0, std::any(info->filename.toStdString()) });
 
-  auto statistics = reader.statistics();
+  const std::optional<mcap::Statistics> statistics = reader.statistics();
 
   std::unordered_map<int, mcap::SchemaPtr> mcap_schemas;         // schema_id
   std::unordered_map<int, mcap::ChannelPtr> channels;            // channel_id
@@ -116,6 +117,33 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     mcap_schemas.insert({ schema_id, schema_ptr });
   }
 
+  if (!info->plugin_config.hasChildNodes())
+  {
+    _dialog_parameters = std::nullopt;
+  }
+
+  for (const auto& [channel_id, channel_ptr] : reader.channels())
+  {
+    channels.insert({ channel_id, channel_ptr });
+  }
+
+  // don't show the dialog if we already loaded the parameters with xmlLoadState
+  if (!_dialog_parameters)
+  {
+    std::unordered_map<uint16_t, uint64_t> msg_count;
+    if (statistics)
+    {
+      msg_count = statistics->channelMessageCounts;
+    }
+    DialogMCAP dialog(channels, mcap_schemas, msg_count, _dialog_parameters);
+    auto ret = dialog.exec();
+    if (ret != QDialog::Accepted)
+    {
+      return false;
+    }
+    _dialog_parameters = dialog.getParams();
+  }
+
   std::set<QString> notified_encoding_problem;
 
   QElapsedTimer timer;
@@ -129,9 +157,15 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
 
   std::map<std::string, FailedParserInfo> parsers_blacklist;
 
-  for (const auto& [channel_id, channel_ptr] : reader.channels())
+  for (const auto& [channel_id, channel_ptr] : channels)
   {
-    channels.insert({ channel_id, channel_ptr });
+    const auto& topic_name = channel_ptr->topic;
+    const QString topic_name_qt = QString::fromStdString(topic_name);
+    // skip topics that haven't been selected
+    if (!_dialog_parameters->selected_topics.contains(topic_name_qt))
+    {
+      continue;
+    }
     const auto& schema = mcap_schemas.at(channel_ptr->schemaId);
 
     // check if this schema is in the blacklist
@@ -142,9 +176,8 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
       continue;
     }
 
-    const auto& topic_name = channel_ptr->topic;
-    std::string definition(reinterpret_cast<const char*>(schema->data.data()),
-                           schema->data.size());
+    const std::string definition(reinterpret_cast<const char*>(schema->data.data()),
+                                 schema->data.size());
 
     if (schema->name == "data_tamer_msgs/msg/Schemas")
     {
@@ -214,23 +247,6 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
       error_message += "------------------\n";
     }
     QMessageBox::warning(nullptr, "Parser Error", error_message);
-  }
-
-  if (!info->plugin_config.hasChildNodes())
-  {
-    _dialog_parameters = std::nullopt;
-  }
-
-  // don't show the dialog if we already loaded the parameters with xmlLoadState
-  if (!_dialog_parameters)
-  {
-    DialogMCAP dialog(channels, mcap_schemas, _dialog_parameters);
-    auto ret = dialog.exec();
-    if (ret != QDialog::Accepted)
-    {
-      return false;
-    }
-    _dialog_parameters = dialog.getParams();
   }
 
   std::unordered_set<int> enabled_channels;
