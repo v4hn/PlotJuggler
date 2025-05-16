@@ -265,7 +265,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
       auto mcap_channel = channels[channel_id]->id;
       if (statistics->channelMessageCounts.count(mcap_channel) != 0)
       {
-        total_msgs += statistics->channelMessageCounts[channels[channel_id]->id];
+        total_msgs += statistics->channelMessageCounts.at(channel_id);
       }
     }
   }
