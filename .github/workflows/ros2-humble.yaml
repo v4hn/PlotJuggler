@@ -16,7 +16,7 @@ jobs:
         with:
           required-ros-distributions: humble
 
-      # Step 2: Cache ROS dependencies
+      # SteCache ROS dependencies
       - name: Cache ROS dependencies
         uses: actions/cache@v4
         with:
@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-ros2-humble-
 
       # Step 3: Run ROS CI
-      - uses: ros-tooling/action-ros-ci@v0.3
+      - uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: plotjuggler
           target-ros2-distro: humble

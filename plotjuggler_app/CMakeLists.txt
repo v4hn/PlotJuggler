@@ -110,16 +110,23 @@ if (NOT WIN32)
     add_backward(plotjuggler)
 endif()
 
+target_include_directories(plotjuggler
+    PRIVATE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/color_widgets/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/Qt-Advanced-Docking/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/QCodeEditor/include>
+    )
+
 target_link_libraries(plotjuggler
-    ${QT_LINK_LIBRARIES}
-    colorwidgets
-    qt_advanced_docking
-    plotjuggler_base
-    plotjuggler_qwt
-    QCodeEditor
-    nlohmann_json
-    lua
-    sol2
+        ${QT_LINK_LIBRARIES}
+        colorwidgets
+        qt_advanced_docking
+        plotjuggler_base
+        plotjuggler_qwt
+        QCodeEditor
+        nlohmann_json
+        Lua::Lua
+        sol2
     )
 
 if(COMPILING_WITH_AMENT)

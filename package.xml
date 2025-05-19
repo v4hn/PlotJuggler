@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>plotjuggler</name>
-    <version>3.10.1</version>
+    <version>3.10.2</version>
     <description>PlotJuggler: juggle with data</description>
 
     <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
@@ -12,6 +12,8 @@
     <author email="davide.faconti@gmail.com">Davide Faconti</author>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>git</buildtool_depend>
+
     <depend>ament_index_cpp</depend>
     <depend>rclcpp</depend>
     <depend>fastcdr</depend>
@@ -28,8 +30,12 @@
 
     <depend>boost</depend>
     <depend>libzmq3-dev</depend>
-
+    <depend>lua-dev</depend>
     <depend>protobuf-dev</depend>
+    <depend>lz4</depend>
+    <depend>libzstd-dev</depend>
+    <depend>libbackward-cpp-dev</depend>
+    <depend>mosquittopp-dev</depend>
 
     <!-- The export tag contains other, unspecified, tags -->
     <export>
