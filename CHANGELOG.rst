@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* cmake fixes (again)
+* Cmake cleanups (`#1076 <https://github.com/facontidavide/PlotJuggler/issues/1076>`_)
+* Add missing find_package for plojuggler_qwt (`#1064 <https://github.com/facontidavide/PlotJuggler/issues/1064>`_)
+* improve MCAP loader
+* fix issue in MCAP when one of the parsers fail
+* Contributors: AlessandroCanossa, Davide Faconti
+
 3.10.0 (2025-04-30)
 -------------------
 * Release 3.10 (`#1067 <https://github.com/facontidavide/PlotJuggler/issues/1067>`_)
