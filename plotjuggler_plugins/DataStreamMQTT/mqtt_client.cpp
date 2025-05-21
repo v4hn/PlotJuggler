@@ -193,7 +193,7 @@ bool MQTTClient::configureMosquitto(const MosquittoConfig& config)
     {
       char err[1024];
 #ifndef WIN32
-      strerror_r(errno, err, 1024);
+      auto ret = strerror_r(errno, err, 1024);
 #else
       FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errno, 0, (LPTSTR)&err, 1024, NULL);
 #endif

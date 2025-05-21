@@ -6,7 +6,7 @@ function(find_or_download_dependencies)
     find_package(fastcdr QUIET)
 
     if (fastcdr_FOUND)
-        message(STATUS "Found fastcdr")
+        message(STATUS "Found fastcdr in system")
 
     elseif(NOT TARGET fastcdr)
         message(STATUS "fastcdr not found, downloading")
@@ -19,13 +19,8 @@ function(find_or_download_dependencies)
     endif()
 
     ##### backward_cpp ######
-    find_package(backward_cpp QUIET)
 
-    if (backward_cpp_FOUND)
-        message(STATUS "Found backward_cpp")
-    elseif(NOT TARGET backward_cpp)
-        CPMAddPackage("gh:bombela/backward-cpp@1.6")
-    endif()
+    CPMAddPackage("gh:bombela/backward-cpp@1.6")
 
     ##### nlohmann_json ######
 
@@ -33,16 +28,25 @@ function(find_or_download_dependencies)
 
     ##### Lua + Sol2 ######
 
-    # find_package(Lua QUIET)
+    find_package(Lua QUIET)
 
     if(LUA_FOUND)
-        message(STATUS "Found lua")
+        message(STATUS "Found Lua in system")
+        if(NOT TARGET Lua::Lua)
+            add_library(Lua::Lua INTERFACE IMPORTED)
+            set_target_properties(Lua::Lua PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES "${LUA_LIBRARY}"
+            )
+        endif()
+
     elseif (NOT TARGET lua)
+        message(STATUS "Lua not found, downloading")
         CPMAddPackage(
-        NAME lua
-        GIT_REPOSITORY https://github.com/lua/lua.git
-        VERSION 5.4.7
-        DOWNLOAD_ONLY YES
+            NAME lua
+            GIT_REPOSITORY https://github.com/lua/lua.git
+            VERSION 5.4.7
+            DOWNLOAD_ONLY YES
         )
         # lua has no CMake support, so we create our own target
         if (lua_ADDED)
@@ -52,26 +56,21 @@ function(find_or_download_dependencies)
             target_include_directories(lua_static SYSTEM PUBLIC $<BUILD_INTERFACE:${lua_SOURCE_DIR}>)
             set_property(TARGET lua_static PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-            install(
-                TARGETS lua_static
-                EXPORT ${PROJECT_NAME}Targets
-                LIBRARY DESTINATION lib
-                ARCHIVE DESTINATION lib
-                RUNTIME DESTINATION bin
-                INCLUDES DESTINATION include
-                )
-
             set(LUA_INCLUDE_DIR "${lua_SOURCE_DIR}" CACHE PATH "Lua include directory" FORCE)
             set(LUA_LIBRARY lua_static CACHE STRING "Lua library" FORCE)
 
+            add_library(Lua::Lua INTERFACE IMPORTED)
+            set_target_properties(Lua::Lua PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES "${LUA_LIBRARY}"
+            )
         endif()
     endif()
 
-    add_library(Lua::Lua INTERFACE IMPORTED)
-    set_target_properties(Lua::Lua PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
-        INTERFACE_LINK_LIBRARIES "${LUA_LIBRARY}"
-    )
+    if(NOT TARGET Lua::Lua)
+        message(FATAL_ERROR "Lua not found, please install Lua or download it")
+    endif()
+
 
     ########################################
 
@@ -97,7 +96,7 @@ function(find_or_download_dependencies)
     find_package(ZSTD QUIET)
 
     if (ZSTD_FOUND)
-        message(STATUS "Found ZSTD")
+        message(STATUS "Found ZSTD in system")
     elseif(NOT TARGET zstd)
         ### zstd ###
         CPMAddPackage(
@@ -136,7 +135,7 @@ function(find_or_download_dependencies)
     find_package(LZ4 QUIET)
 
     if (LZ4_FOUND)
-        message(STATUS "Found LZ4")
+        message(STATUS "Found LZ4 in system")
     elseif(NOT TARGET lz4_static)
         ### lz4 ###
         CPMAddPackage(

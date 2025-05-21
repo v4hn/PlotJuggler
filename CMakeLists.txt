@@ -19,6 +19,7 @@ add_definitions(
 #add_definitions( -DPJ_DEFAULT_ARGS="${PJ_DEFAULT_ARGS}")
 
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+option(BASE_AS_SHARED "Build the base library as a shared libary" OFF)
 option(BUILDING_WITH_CONAN "Using Conan for depenencies" OFF)
 
 IF (NOT WIN32 AND ENABLE_ASAN)
@@ -29,14 +30,37 @@ endif()
 
 add_definitions( -DFMT_HEADER_ONLY )
 
+
 if(VCPKG_TOOLCHAIN)
     set(BUILDING_WITH_VCPKG ON)
     message(STATUS "BUILDING_WITH_VCPKG")
 endif()
 
 find_package(ament_cmake QUIET)
+find_package(catkin QUIET)
 
-if(ament_cmake_FOUND)
+# http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
+if(catkin_FOUND)
+    set(COMPILING_WITH_CATKIN 1)
+
+    message(STATUS "--------------------------------------------------")
+    message(STATUS "PlotJuggler is being built using CATKIN.")
+    message(STATUS "--------------------------------------------------")
+
+    find_package(catkin REQUIRED COMPONENTS roslib roscpp)
+
+    catkin_package(
+        INCLUDE_DIRS  plotjuggler_base/include
+        LIBRARIES  plotjuggler_base
+        CATKIN_DEPENDS roslib roscpp
+    )
+
+message(STATUS ${catkin_INCLUDE_DIRS})
+
+    include_directories(${catkin_INCLUDE_DIRS})
+    add_definitions(-DCOMPILED_WITH_CATKIN)
+
+elseif(ament_cmake_FOUND)
     set(COMPILING_WITH_AMENT 1)
 
     find_package(ament_cmake REQUIRED)
@@ -49,6 +73,7 @@ if(ament_cmake_FOUND)
     message(STATUS "--------------------------------------------------")
 
     add_definitions(-DCOMPILED_WITH_AMENT)
+    set(BASE_AS_SHARED ON)
 
 else()
     message(STATUS "--------------------------------------------------")
@@ -161,30 +186,44 @@ qt5_wrap_cpp(PLOTJUGGLER_BASE_MOCS
   plotjuggler_base/include/PlotJuggler/plotwidget_base.h
 )
 
-add_library(plotjuggler_base STATIC
-    ${PLOTJUGGLER_BASE_SRC}
-    ${PLOTJUGGLER_BASE_MOCS}
-)
+if (BASE_AS_SHARED)
+    add_library(plotjuggler_base SHARED
+        ${PLOTJUGGLER_BASE_SRC}
+        ${PLOTJUGGLER_BASE_MOCS}
+        )
+else()
+    add_library(plotjuggler_base STATIC
+        ${PLOTJUGGLER_BASE_SRC}
+        ${PLOTJUGGLER_BASE_MOCS}
+        )
+endif()
 
 target_link_libraries(plotjuggler_base
-PRIVATE
-    plotjuggler_qwt
-    Lua::Lua
-    sol2
-)
+    PUBLIC
+        plotjuggler_qwt
+    PRIVATE
+        Lua::Lua
+        sol2
+    )
 
 target_include_directories(plotjuggler_base
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler_base/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler_base/src>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/qwt/src>
-        $<INSTALL_INTERFACE:plotjuggler_base/include>
+        $<INSTALL_INTERFACE:include>
 )
-
 
 #########################  INSTALL  ####################################
 
-if(COMPILING_WITH_AMENT)
+if(COMPILING_WITH_CATKIN)
+
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
+    set(PJ_PLUGIN_INSTALL_DIRECTORY ${CATKIN_PACKAGE_BIN_DESTINATION} )
+
+elseif(COMPILING_WITH_AMENT)
 
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -222,7 +261,7 @@ add_subdirectory( plotjuggler_plugins)
 
 install(
      TARGETS
-        plotjuggler_base plotjuggler_qwt sol2
+        plotjuggler_base plotjuggler_qwt
      EXPORT ${PROJECT_NAME}Targets
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
@@ -233,7 +272,7 @@ install(DIRECTORY plotjuggler_base/include/ DESTINATION include )
 
 export(PACKAGE ${PROJECT_NAME})
 
-if(NOT COMPILING_WITH_AMENT)
+if(NOT COMPILING_WITH_AMENT AND NOT COMPILING_WITH_CATKIN)
 
     include(GNUInstallDirs)
 
