@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.3 (2025-05-21)
+-------------------
 * cmake fixes (again)
 * Cmake cleanups (`#1076 <https://github.com/facontidavide/PlotJuggler/issues/1076>`_)
 * Add missing find_package for plojuggler_qwt (`#1064 <https://github.com/facontidavide/PlotJuggler/issues/1064>`_)
