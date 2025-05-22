@@ -158,9 +158,14 @@ include(cmake/find_or_download_dependencies.cmake)
 
 find_or_download_dependencies()
 
-add_subdirectory( 3rdparty )
+add_subdirectory( 3rdparty/qwt/src )
+add_subdirectory( 3rdparty/QCodeEditor )
+add_subdirectory( 3rdparty/color_widgets )
+add_subdirectory( 3rdparty/Qt-Advanced-Docking )
 
-
+if (NOT WIN32)
+  add_subdirectory( 3rdparty/backward-cpp )
+endif()
 
 #########################  BASE library  ####################################
 

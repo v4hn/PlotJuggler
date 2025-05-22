@@ -18,10 +18,6 @@ function(find_or_download_dependencies)
         )
     endif()
 
-    ##### backward_cpp ######
-
-    CPMAddPackage("gh:bombela/backward-cpp@1.6")
-
     ##### nlohmann_json ######
 
     CPMAddPackage("gh:nlohmann/json@3.11.3")
