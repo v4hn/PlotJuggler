@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.4 (2025-05-22)
+-------------------
 * add backward again, fix `#1079 <https://github.com/facontidavide/PlotJuggler/issues/1079>`_
 * Contributors: Davide Faconti
 
