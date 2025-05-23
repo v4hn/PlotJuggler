@@ -18,7 +18,7 @@ public:
 
   bool parseMessage(const MessageRef serialized_msg, double& timestamp) override
   {
-    std::span<const uint8_t> msgSpan(serialized_msg.data(), serialized_msg.size());
+    DDS::Span<const uint8_t> msgSpan(serialized_msg.data(), serialized_msg.size());
     parser_->parse(msgSpan, flat_message_);
 
     for (const auto& [key, var] : flat_message_.numerical_values)
