@@ -2,6 +2,11 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* More cmake fixes
+* Contributors: Davide Faconti
+
 3.10.4 (2025-05-22)
 -------------------
 * add backward again, fix `#1079 <https://github.com/facontidavide/PlotJuggler/issues/1079>`_
