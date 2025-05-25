@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.5 (2025-05-25)
+-------------------
 * More cmake fixes
 * Contributors: Davide Faconti
 
