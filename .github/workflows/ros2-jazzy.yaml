@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ros2/jazzy
+    container: ros:jazzy
 
     steps:
       - name: Cache apt packages
