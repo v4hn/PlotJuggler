@@ -20,10 +20,10 @@ jobs:
       # Set up ROS
       - uses: ros-tooling/setup-ros@v0.7
         with:
-          required-ros-distributions: rolling
+          required-ros-distributions: jazzy
 
       # Run ROS CI
       - uses: ros-tooling/action-ros-ci@v0.3
         with:
           package-name: plotjuggler
-          target-ros2-distro: rolling
+          target-ros2-distro: jazzy
