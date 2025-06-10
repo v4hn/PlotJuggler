@@ -43,19 +43,9 @@ function(find_or_download_lua)
         CPMAddPackage(
             NAME sol2
             GITHUB_REPOSITORY ThePhD/sol2
-            GIT_TAG v3.5.0
-            DOWNLOAD_ONLY YES
+            GIT_TAG v3.3.0
+            OPTIONS "SOL2_ENABLE_INSTALL OFF"
         )
-
-        add_library(sol2 INTERFACE )
-        target_include_directories(sol2 INTERFACE
-            $<BUILD_INTERFACE:${sol2_SOURCE_DIR}/include>
-            $<INSTALL_INTERFACE:include>)
-
-        add_library(sol2::sol2 ALIAS sol2)
-        set(SOL2_FOUND TRUE)
-
-        install(TARGETS sol2 EXPORT plotjugglerTargets )
     endif()
 
 endfunction()

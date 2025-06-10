@@ -217,7 +217,7 @@ target_link_libraries(plotjuggler_base
         plotjuggler_qwt
     PRIVATE
         lua::lua
-        sol2::sol2
+        sol2
     )
 
 target_include_directories(plotjuggler_base
