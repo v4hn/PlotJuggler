@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: ros2/jazzy
+
     steps:
       - name: Cache apt packages
         uses: awalsh128/cache-apt-pkgs-action@latest
@@ -18,9 +20,9 @@ jobs:
           version: 1.0
 
       # Set up ROS
-      - uses: ros-tooling/setup-ros@v0.7
-        with:
-          required-ros-distributions: jazzy
+      # - uses: ros-tooling/setup-ros@v0.7
+      #   with:
+      #     required-ros-distributions: jazzy
 
       # Run ROS CI
       - uses: ros-tooling/action-ros-ci@v0.3
