@@ -37,15 +37,5 @@ function(find_or_download_lua)
         )
     endif()
 
-    ################################3
-    if(NOT TARGET sol2::sol2)
-        message(STATUS "Sol2 not found, downloading")
-        CPMAddPackage(
-            NAME sol2
-            GITHUB_REPOSITORY ThePhD/sol2
-            GIT_TAG v3.3.0
-            OPTIONS "SOL2_ENABLE_INSTALL OFF"
-        )
-    endif()
 
 endfunction()
