@@ -12,7 +12,7 @@ function(find_or_download_fastcdr)
             NAME fastcdr_imported
             GITHUB_REPOSITORY eProsima/Fast-CDR
             GIT_TAG v2.2.6
-            OPTIONS "BUILD_SHARED_LIBS OFF"
+            OPTIONS "BUILD_SHARED_LIBS OFF; BUILD_TESTING OFF"
         )
     endif()
 

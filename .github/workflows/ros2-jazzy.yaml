@@ -1,4 +1,4 @@
-name: ros2-rolling
+name: ros2-jazzy
 
 on:
   push:
