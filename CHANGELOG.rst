@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix mcap on ROS2
+* update sol2
+* Add button to delete custom timeseries (`#1093 <https://github.com/facontidavide/PlotJuggler/issues/1093>`_)
+  * Add button to delete custom timeseries
+  * Remove tailing whitespace
+* Contributors: Davide Faconti, Zach Davis
+
 3.10.5 (2025-05-25)
 -------------------
 * More cmake fixes
