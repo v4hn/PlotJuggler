@@ -20,12 +20,12 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This file was generated with a script.
-// Generated 2025-06-10 08:50:31.543996 UTC
-// This header was generated with sol v3.3.0 (revision eba8662)
+// Generated 2025-06-16 07:43:13.692952 UTC
+// This header was generated with sol 3.10.6 (revision de25489d)
 // https://github.com/ThePhD/sol2
 
-#ifndef SOL_SINGLE_CONFIG_HPP
-#define SOL_SINGLE_CONFIG_HPP
+#ifndef SOL_SINGLE_SOL_CONFIG_HPP
+#define SOL_SINGLE_SOL_CONFIG_HPP
 
 // beginning of sol/config.hpp
 
@@ -50,4 +50,4 @@ the build system, or the command line options of your compiler.
 
 // end of sol/config.hpp
 
-#endif // SOL_SINGLE_CONFIG_HPP
+#endif // SOL_SINGLE_SOL_CONFIG_HPP
