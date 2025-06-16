@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.7 (2025-06-16)
+-------------------
 * fix mcap on ROS2
 * update sol2
 * Add button to delete custom timeseries (`#1093 <https://github.com/facontidavide/PlotJuggler/issues/1093>`_)
