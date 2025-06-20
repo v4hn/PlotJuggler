@@ -9,10 +9,11 @@ function(find_or_download_fastcdr)
     elseif(NOT TARGET fastcdr)
         message(STATUS "fastcdr not found, downloading")
         CPMAddPackage(
-            NAME fastcdr_imported
+            NAME fastcdr
             URL https://github.com/eProsima/Fast-CDR/archive/refs/tags/v2.3.0.zip
             OPTIONS "BUILD_SHARED_LIBS OFF" "BUILD_TESTING OFF"
         )
+        set_target_properties(fastcdr PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
 
 endfunction()
