@@ -315,7 +315,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     MessageRef msg(msg_view.message.data, msg_view.message.dataSize);
     parser->parseMessage(msg, timestamp_sec);
 
-    if (msg_count++ % 1000 == 0 && std::chrono::steady_clock::now() > new_progress_update)
+    if (msg_count++ % 100 == 0 && std::chrono::steady_clock::now() > new_progress_update)
     {
       new_progress_update += std::chrono::milliseconds(500);
       progress_dialog.setValue(msg_count);
