@@ -288,6 +288,9 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
 
   size_t msg_count = 0;
 
+  auto new_progress_update =
+      std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
+
   for (const auto& msg_view : messages)
   {
     if (enabled_channels.count(msg_view.channel->id) == 0)
@@ -312,8 +315,9 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     MessageRef msg(msg_view.message.data, msg_view.message.dataSize);
     parser->parseMessage(msg, timestamp_sec);
 
-    if (msg_count++ % 1000 == 0)
+    if (msg_count++ % 1000 == 0 && std::chrono::steady_clock::now() > new_progress_update)
     {
+      new_progress_update += std::chrono::milliseconds(500);
       progress_dialog.setValue(msg_count);
       QApplication::processEvents();
       if (progress_dialog.wasCanceled())
