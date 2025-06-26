@@ -38,8 +38,8 @@
     <depend>libzstd-dev</depend>
     <depend>protobuf-dev</depend>
     <depend>lua-dev</depend>
-    <depend>mosquittopp-dev</depend>
     <depend>nlohmann-json-dev</depend>
+    <depend>mcap_vendor</depend>
 
     <!-- The export tag contains other, unspecified, tags -->
     <export>
