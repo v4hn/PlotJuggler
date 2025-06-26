@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.8 (2025-06-26)
+-------------------
 * fix ROS package
 * Feat/cmakelist namespace (`#1099 <https://github.com/facontidavide/PlotJuggler/issues/1099>`_)
   * add namespace when using plotjuggler, include macrodependency
