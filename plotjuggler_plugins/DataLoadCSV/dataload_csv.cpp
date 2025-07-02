@@ -523,7 +523,6 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
 
   //-----------------------------------
   bool interrupted = false;
-  int linecount = 0;
 
   // count the number of lines first
   int tot_lines = 0;
@@ -542,7 +541,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   progress_dialog.setWindowTitle("Loading the CSV file");
   progress_dialog.setLabelText("Loading... please wait");
   progress_dialog.setWindowModality(Qt::ApplicationModal);
-  progress_dialog.setRange(0, tot_lines - 1);
+  progress_dialog.setRange(0, tot_lines);
   progress_dialog.setAutoClose(true);
   progress_dialog.setAutoReset(true);
   progress_dialog.show();
@@ -609,9 +608,12 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   QString t_str;
   QString prev_t_str;
 
+  int linenumber = 1;
+  int samplecount = 0;
   while (!in.atEnd())
   {
     QString line = in.readLine();
+    linenumber++;
     SplitLine(line, _delimiter, string_items);
 
     // empty line? just try skipping
@@ -627,7 +629,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
       msgBox.setText(tr("The number of values at line %1 is %2,\n"
                         "but the expected number of columns is %3.\n"
                         "Aborting...")
-                         .arg(linecount + 2)
+                         .arg(linenumber)
                          .arg(string_items.size())
                          .arg(column_names.size()));
 
@@ -643,7 +645,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
                                  .arg(_fileInfo->filename)
                                  .arg(_delimiter)
                                  .arg(header_str)
-                                 .arg(linecount + 2)
+                                 .arg(linenumber)
                                  .arg(line)
                                  .arg(column_names.size())
                                  .arg(string_items.size()));
@@ -657,7 +659,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
       return false;
     }
 
-    double timestamp = linecount;
+    double timestamp = samplecount;
 
     if (time_index >= 0)
     {
@@ -689,7 +691,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
         msgBox.setWindowTitle(tr("Error reading file"));
         msgBox.setText(tr("Couldn't parse timestamp on line %1 with string \"%2\" . "
                           "Aborting.\n")
-                           .arg(linecount + 1)
+                           .arg(linenumber)
                            .arg(t_str));
 
         msgBox.setDetailedText(tr("File: \"%1\" \n\n"
@@ -697,7 +699,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
                                   "Parsing format: [%4]\n"
                                   "Time at line %2 : [%3]\n")
                                    .arg(_fileInfo->filename)
-                                   .arg(linecount + 1)
+                                   .arg(linenumber)
                                    .arg(t_str)
                                    .arg((parse_date_format && !format_string.isEmpty()) ?
                                             format_string :
@@ -729,9 +731,9 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
                                   "Time at line %2 : %3\n"
                                   "Time at line %4 : %5")
                                    .arg(_fileInfo->filename)
-                                   .arg(linecount + 1)
+                                   .arg(linenumber - 1)
                                    .arg(prev_t_str)
-                                   .arg(linecount + 2)
+                                   .arg(linenumber)
                                    .arg(t_str)
                                    .arg(time_index)
                                    .arg(timeName));
@@ -775,9 +777,9 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
       }
     }
 
-    if (linecount++ % 100 == 0)
+    if (linenumber % 100 == 0)
     {
-      progress_dialog.setValue(linecount);
+      progress_dialog.setValue(linenumber);
       QApplication::processEvents();
       if (progress_dialog.wasCanceled())
       {
@@ -785,6 +787,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
         break;
       }
     }
+    samplecount++;
   }
 
   if (interrupted)
