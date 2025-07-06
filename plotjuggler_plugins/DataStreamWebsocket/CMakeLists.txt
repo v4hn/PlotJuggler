@@ -9,17 +9,16 @@ else()
 
   include_directories(../)
 
-  add_definitions(${QT_DEFINITIONS})
-  add_definitions(-DQT_PLUGIN)
-
   qt5_wrap_ui(UI_SRC websocket_server.ui)
 
   set(SRC websocket_server.cpp)
 
   add_library(DataStreamWebSocket SHARED ${SRC} ${UI_SRC})
 
-  target_link_libraries(DataStreamWebSocket ${Qt5Widgets_LIBRARIES}
-                        Qt5::WebSockets plotjuggler_base)
+  target_link_libraries(DataStreamWebSocket
+                        PRIVATE Qt5::Widgets Qt5::WebSockets plotjuggler_base)
+
+  target_compile_definitions(DataStreamWebSocket PRIVATE QT_PLUGIN)
 
   install(TARGETS DataStreamWebSocket
           DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})

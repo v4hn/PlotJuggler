@@ -17,9 +17,6 @@ if(Arrow_FOUND)
   message(STATUS "[Parquet] found")
   include_directories(../ ${ARROW_INCLUDE_DIR} ${PARQUET_INCLUDE_DIR})
 
-  add_definitions(${QT_DEFINITIONS})
-  add_definitions(-DQT_PLUGIN)
-
   qt5_wrap_ui(UI_SRC dataload_parquet.ui)
 
   set(SRC dataload_parquet.cpp)
@@ -27,8 +24,10 @@ if(Arrow_FOUND)
   add_library(DataLoadParquet SHARED ${SRC} ${UI_SRC})
 
   target_link_libraries(
-    DataLoadParquet ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES}
-    ${PARQUET_SHARED_LIB} plotjuggler_base)
+    DataLoadParquet PRIVATE Qt5::Widgets Qt5::Xml ${PARQUET_SHARED_LIB}
+                            plotjuggler_base)
+
+  target_compile_definitions(DataLoadParquet PRIVATE QT_PLUGIN)
 
   install(TARGETS DataLoadParquet DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})
 

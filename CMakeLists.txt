@@ -10,10 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-add_definitions(
-  -DPJ_MAJOR_VERSION=${PROJECT_VERSION_MAJOR}
-  -DPJ_MINOR_VERSION=${PROJECT_VERSION_MINOR}
-  -DPJ_PATCH_VERSION=${PROJECT_VERSION_PATCH})
+# Version definitions will be added to plotjuggler_base target later
 
 # You can add some command line arguments at compilation time Use _0x3b_ instead
 # of semicolon
@@ -33,7 +30,7 @@ if(NOT WIN32 AND ENABLE_ASAN)
       "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
 endif()
 
-add_definitions(-DFMT_HEADER_ONLY)
+# FMT_HEADER_ONLY will be added to targets that need it
 
 if(VCPKG_TOOLCHAIN)
   set(BUILDING_WITH_VCPKG ON)
@@ -65,7 +62,7 @@ if(catkin_FOUND)
   message(STATUS ${catkin_INCLUDE_DIRS})
 
   include_directories(${catkin_INCLUDE_DIRS})
-  add_definitions(-DCOMPILED_WITH_CATKIN)
+  # COMPILED_WITH_CATKIN will be added to plotjuggler_base target later
 
 elseif(ament_cmake_FOUND)
   set(COMPILING_WITH_AMENT 1)
@@ -79,7 +76,7 @@ elseif(ament_cmake_FOUND)
   message(STATUS "PlotJuggler is being built using AMENT.")
   message(STATUS "--------------------------------------------------")
 
-  add_definitions(-DCOMPILED_WITH_AMENT)
+  # COMPILED_WITH_AMENT will be added to plotjuggler_base target later
   set(BASE_AS_SHARED ON)
 
 else()
@@ -221,6 +218,16 @@ target_link_libraries(
   plotjuggler_base
   PUBLIC plotjuggler_qwt
   PRIVATE lua::lua)
+
+# Add compile definitions to plotjuggler_base
+target_compile_definitions(
+  plotjuggler_base
+  PUBLIC PJ_MAJOR_VERSION=${PROJECT_VERSION_MAJOR}
+         PJ_MINOR_VERSION=${PROJECT_VERSION_MINOR}
+         PJ_PATCH_VERSION=${PROJECT_VERSION_PATCH}
+         FMT_HEADER_ONLY
+         $<$<BOOL:${COMPILING_WITH_CATKIN}>:COMPILED_WITH_CATKIN>
+         $<$<BOOL:${COMPILING_WITH_AMENT}>:COMPILED_WITH_AMENT>)
 
 target_include_directories(
   plotjuggler_base

@@ -11,16 +11,16 @@ else()
 
   include_directories(../ ${QTAVWIDGETS_INCLUDE_DIRS})
 
-  add_definitions(${QT_DEFINITIONS})
-  add_definitions(-DQT_PLUGIN)
-
   qt5_wrap_ui(UI_SRC video_dialog.ui)
 
   add_library(PublisherVideoViewer SHARED video_viewer.cpp video_dialog.cpp
                                           ${UI_SRC})
 
-  target_link_libraries(PublisherVideoViewer Qt5::Widgets
-                        ${QTAVWIDGETS_LIBRARIES} plotjuggler_base)
+  target_link_libraries(
+    PublisherVideoViewer PRIVATE Qt5::Widgets ${QTAVWIDGETS_LIBRARIES}
+                                 plotjuggler_base)
+
+  target_compile_definitions(PublisherVideoViewer PRIVATE QT_PLUGIN)
   install(TARGETS PublisherVideoViewer
           DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})
 endif()

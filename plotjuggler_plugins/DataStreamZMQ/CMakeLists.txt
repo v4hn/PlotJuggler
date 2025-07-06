@@ -12,16 +12,15 @@ find_package(ZeroMQ QUIET)
 if(ZeroMQ_FOUND)
   message(STATUS "[ZeroMQ] found")
 
-  add_definitions(${QT_DEFINITIONS})
-  add_definitions(-DQT_PLUGIN)
-
   qt5_wrap_ui(UI_SRC datastream_zmq.ui)
 
   add_library(DataStreamZMQ SHARED datastream_zmq.cpp ${UI_SRC})
 
   target_include_directories(DataStreamZMQ PRIVATE ${ZeroMQ_INCLUDE_DIRS})
-  target_link_libraries(DataStreamZMQ ${Qt5Widgets_LIBRARIES} plotjuggler_base
-                        ${ZeroMQ_LIBRARIES})
+  target_link_libraries(DataStreamZMQ PRIVATE Qt5::Widgets plotjuggler_base
+                                              ${ZeroMQ_LIBRARIES})
+
+  target_compile_definitions(DataStreamZMQ PRIVATE QT_PLUGIN)
 
   if(BUILDING_WITH_VCPKG OR BUILDING_WITH_CONAN)
     target_link_libraries(DataStreamZMQ libzmq-static)
