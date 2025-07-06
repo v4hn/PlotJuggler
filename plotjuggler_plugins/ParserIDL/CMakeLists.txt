@@ -3,23 +3,18 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dds_parser")
       OFF
       CACHE BOOL "Force DDS_PARSER_BUILD_TESTING to OFF" FORCE)
   add_subdirectory(dds_parser)
-else()
-  message(
-    WARNING
-      "dds_parser not found in ${CMAKE_CURRENT_SOURCE_DIR}/dds_parser, skipping!"
-  )
-  return()
+
+  add_library(ParserDDS SHARED idl_parser.cpp)
+
+  target_include_directories(
+    ParserDDS
+    PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/dds_parser/include>)
+
+  target_link_libraries(ParserDDS PRIVATE Qt5::Widgets dds_parser
+                                          plotjuggler_base)
+
+  target_compile_definitions(ParserDDS PRIVATE QT_PLUGIN)
+
+  install(TARGETS ParserDDS DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})
+
 endif()
-
-add_library(ParserDDS SHARED idl_parser.cpp)
-
-target_include_directories(
-  ParserDDS
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/dds_parser/include>)
-
-target_link_libraries(ParserDDS PRIVATE Qt5::Widgets dds_parser
-                                        plotjuggler_base)
-
-target_compile_definitions(ParserDDS PRIVATE QT_PLUGIN)
-
-install(TARGETS ParserDDS DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})

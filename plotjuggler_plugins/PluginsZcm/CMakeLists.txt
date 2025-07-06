@@ -32,8 +32,8 @@ if(Zcm_FOUND)
   add_library(DataLoadZcm SHARED dataload_zcm.h dataload_zcm.cpp config_zcm.h
                                  config_zcm.cpp ${LOAD_UI})
 
-  target_link_libraries(DataLoadZcm Qt5::Widgets plotjuggler_base
-                        ${Zcm_LIBRARIES})
+  target_link_libraries(DataLoadZcm PRIVATE Qt5::Widgets plotjuggler_base
+                                            ${Zcm_LIBRARIES})
 
   install(TARGETS DataStreamZcm DataLoadZcm
           DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})

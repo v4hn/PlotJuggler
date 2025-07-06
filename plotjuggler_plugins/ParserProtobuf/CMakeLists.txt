@@ -29,8 +29,9 @@ if(Protobuf_FOUND)
     target_compile_definitions(ProtobufParser PRIVATE QT_PLUGIN)
   endif()
 
-  target_link_libraries(ProtobufParser Qt5::Widgets Qt5::Xml ${Protobuf_LIBS}
-                        plotjuggler_base plotjuggler_qwt)
+  target_link_libraries(
+    ProtobufParser PRIVATE Qt5::Widgets Qt5::Xml ${Protobuf_LIBS}
+                           plotjuggler_base plotjuggler_qwt)
 
   install(TARGETS ProtobufParser DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})
 else()
