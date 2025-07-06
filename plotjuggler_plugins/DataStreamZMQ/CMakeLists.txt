@@ -23,9 +23,9 @@ if(ZeroMQ_FOUND)
   target_compile_definitions(DataStreamZMQ PRIVATE QT_PLUGIN)
 
   if(BUILDING_WITH_VCPKG OR BUILDING_WITH_CONAN)
-    target_link_libraries(DataStreamZMQ libzmq-static)
+    target_link_libraries(DataStreamZMQ PRIVATE libzmq-static)
   else()
-    target_link_libraries(DataStreamZMQ ${ZeroMQ_LIBRARIES})
+    target_link_libraries(DataStreamZMQ PRIVATE ${ZeroMQ_LIBRARIES})
   endif()
 
   install(TARGETS DataStreamZMQ DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY})
