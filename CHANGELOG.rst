@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.9 (2025-07-08)
+-------------------
 * add Arrow to conan and fix Windows CI (`#1109 <https://github.com/facontidavide/PlotJuggler/issues/1109>`_)
 * modernize cmake
 * apply formatting to cmakelists
