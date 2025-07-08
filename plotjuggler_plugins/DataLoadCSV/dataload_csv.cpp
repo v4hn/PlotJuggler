@@ -610,7 +610,11 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
 
   int linenumber = 1;
   int samplecount = 0;
-  QVector<std::tuple<long, long, QString>> skip_list;
+
+  std::vector<std::pair<long, QString>> skipped_lines;
+  bool skipped_wrong_column = false;
+  bool skipped_invalid_timestamp = false;
+
   while (!in.atEnd())
   {
     QString line = in.readLine();
@@ -626,8 +630,23 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     // corrupted line? just try skipping
     if (string_items.size() != column_names.size())
     {
-      skip_list.append(
-          std::tuple<long, long, QString>(linenumber, string_items.size(), line));
+      if (!skipped_wrong_column)
+      {
+        auto ret =
+            QMessageBox::warning(nullptr, "Unexpected column count",
+                                 tr("Line %1 has %2 columns, but the expected number of "
+                                    "columns is %3.\n Do you want to continue?")
+                                     .arg(linenumber)
+                                     .arg(string_items.size())
+                                     .arg(column_names.size()),
+                                 QMessageBox::Yes | QMessageBox::Abort, QMessageBox::Yes);
+        if (ret == QMessageBox::Abort)
+        {
+          return false;
+        }
+      }
+      skipped_wrong_column = true;
+      skipped_lines.emplace_back(linenumber, "wrong column count");
       continue;
     }
 
@@ -659,31 +678,23 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
 
       if (!is_number)
       {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(tr("Error reading file"));
-        msgBox.setText(tr("Couldn't parse timestamp on line %1 with string \"%2\" . "
-                          "Aborting.\n")
-                           .arg(linenumber)
-                           .arg(t_str));
-
-        msgBox.setDetailedText(tr("File: \"%1\" \n\n"
-                                  "Error reading file | Couldn't parse timestamp\n"
-                                  "Parsing format: [%4]\n"
-                                  "Time at line %2 : [%3]\n")
-                                   .arg(_fileInfo->filename)
-                                   .arg(linenumber)
-                                   .arg(t_str)
-                                   .arg((parse_date_format && !format_string.isEmpty()) ?
-                                            format_string :
-                                            "None"));
-
-        QPushButton* abortButton = msgBox.addButton(QMessageBox::Ok);
-
-        msgBox.setIcon(QMessageBox::Warning);
-
-        msgBox.exec();
-
-        return false;
+        if (!skipped_invalid_timestamp)
+        {
+          auto ret = QMessageBox::warning(nullptr, "Error parsing timestamp",
+                                          tr("Line %1 has an invalid timestamp: "
+                                             "\"%2\".\n Do you want to continue?")
+                                              .arg(linenumber)
+                                              .arg(t_str),
+                                          QMessageBox::Yes | QMessageBox::Abort,
+                                          QMessageBox::Yes);
+          if (ret == QMessageBox::Abort)
+          {
+            return false;
+          }
+        }
+        skipped_invalid_timestamp = true;
+        skipped_lines.emplace_back(linenumber, "invalid timestamp");
+        continue;
       }
 
       if (prev_time > timestamp && !sortRequired)
@@ -798,40 +809,21 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   }
 
   // Warn the user if some lines have been skipped.
-  if (skip_list.size() > 0)
+  if (!skipped_lines.empty())
   {
     QMessageBox msgBox;
-    msgBox.setWindowTitle(tr("Some line(s) have been skipped"));
-    msgBox.setText(tr("Some line(s) have been skipped due to an unexpected number of "
-                      "columns. Do you want to continue (Input file will not be "
-                      "modified)?"));
-    QString detailed_text(tr("File: \"%1\" \n\n"
-                             "Unexpected column count\n"
-                             "Delimiter: [%2]\n"
-                             "Header fields: %6\n\n")
-                              .arg(_fileInfo->filename)
-                              .arg(_delimiter)
-                              .arg(header_str));
-    for (const auto tuple : skip_list)
+    msgBox.setWindowTitle(tr("Some lines have been skipped"));
+    msgBox.setText(tr("Some lines were not parsed as expected. "
+                      "This indicates an issue with the input data."));
+    QString detailed_text;
+    for (const auto& line : skipped_lines)
     {
-      detailed_text += tr("Line %1 actual/expected column count: %2/%3\n")
-                           .arg(std::get<0>(tuple))
-                           .arg(std::get<1>(tuple))
-                           .arg(column_names.size());
-      detailed_text +=
-          tr("Line %1 content: %2\n").arg(std::get<0>(tuple)).arg(std::get<2>(tuple));
+      detailed_text += tr("Line %1: %2\n").arg(line.first).arg(line.second);
     }
     msgBox.setDetailedText(detailed_text);
-    QPushButton* continueButton =
-        msgBox.addButton(tr("Continue"), QMessageBox::ActionRole);
-    QPushButton* abortButton = msgBox.addButton(QMessageBox::Abort);
+    msgBox.addButton(tr("Continue"), QMessageBox::ActionRole);
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.exec();
-
-    if (msgBox.clickedButton() == abortButton)
-    {
-      return false;
-    }
   }
 
   return true;
