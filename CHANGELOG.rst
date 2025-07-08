@@ -2,6 +2,17 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add Arrow to conan and fix Windows CI (`#1109 <https://github.com/facontidavide/PlotJuggler/issues/1109>`_)
+* modernize cmake
+* apply formatting to cmakelists
+* Fix compilation with recent protobuf (`#1108 <https://github.com/facontidavide/PlotJuggler/issues/1108>`_)
+* Change behavior of DataLoadCSV::readDataFromFile to skip incomplete/corrupted lines.
+* Fix line numbers in DataLoadCVS::readDataFromFile.
+  Line numbers within the error/warning messages boxes didn't show the correct line numbers if the CVS file contained empty lines.
+* Contributors: Davide Faconti, Silvio Traversaro, Valentin Platzgummer
+
 3.10.8 (2025-06-26)
 -------------------
 * fix ROS package
