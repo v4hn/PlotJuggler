@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.10 (2025-07-11)
+--------------------
 * cosmetic change in Preferences
 * Fmt cpm (`#1120 <https://github.com/facontidavide/PlotJuggler/issues/1120>`_)
 * Make export plot size an application param
