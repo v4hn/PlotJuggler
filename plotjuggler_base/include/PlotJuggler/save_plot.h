@@ -20,7 +20,7 @@
 
 #include <memory>
 
-const static QSize default_document_dimentions{ 1200, 900 };
+const static QSize default_document_dimentions{ 1920, 1200 };
 
 void savePlotToFile(QSize dims, QwtPlot* plot, QWidget* parent);
 
