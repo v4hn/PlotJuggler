@@ -359,7 +359,7 @@ int main(int argc, char* argv[])
   manager_new_release.get(request_new_release);
 
   MainWindow* window = nullptr;
-  
+
   /*
    * You, fearless code reviewer, decided to start a journey into my source code.
    * For your bravery, you deserve to know the truth.

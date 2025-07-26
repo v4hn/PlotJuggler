@@ -46,7 +46,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
 
   bool use_opengl = settings.value("Preferences::use_opengl", true).toBool();
   ui->checkBoxOpenGL->setChecked(use_opengl);
-  
+
   bool no_splash = settings.value("Preferences::no_splash", false).toBool();
   ui->checkBoxSkipSplash->setChecked(no_splash);
 
