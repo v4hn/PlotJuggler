@@ -1,7 +1,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include "protobuf_parser.h"
-#include "fmt//core.h"
+#include "fmt/core.h"
 
 namespace gp = google::protobuf;
 

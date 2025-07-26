@@ -25,7 +25,7 @@ add_library(
   src/ros_parser.cpp
   src/deserializer.cpp)
 
-target_link_libraries(rosx_introspection PRIVATE fastcdr)
+target_link_libraries(rosx_introspection PRIVATE fastcdr::fastcdr)
 
 target_include_directories(
   rosx_introspection
