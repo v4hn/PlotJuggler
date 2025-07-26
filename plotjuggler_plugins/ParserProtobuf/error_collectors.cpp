@@ -58,9 +58,8 @@ void IoErrorCollector::AddError(int line, google::protobuf::io::ColumnNumber,
                                 const std::string& message)
 #endif
 {
-  _errors.push_back(QString("Line: [%1] Message: %2\n")
-                        .arg(line)
-                        .arg(protobufStringToQString(message)));
+  _errors.push_back(
+      QString("Line: [%1] Message: %2\n").arg(line).arg(protobufStringToQString(message)));
 }
 
 #if GOOGLE_PROTOBUF_VERSION >= 4022000
@@ -71,7 +70,5 @@ void IoErrorCollector::AddWarning(int line, google::protobuf::io::ColumnNumber c
                                   const std::string& message)
 #endif
 {
-  qDebug() << QString("Line: [%1] Message: %2\n")
-                  .arg(line)
-                  .arg(protobufStringToQString(message));
+  qDebug() << QString("Line: [%1] Message: %2\n").arg(line).arg(protobufStringToQString(message));
 }

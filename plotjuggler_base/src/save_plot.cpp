@@ -34,8 +34,8 @@ PlotSaveHelper::PlotSaveHelper(QSize dims, QWidget* parent)
           << "svg (*.svg)";
 
   QString selected_filter;
-  _save_filename = save_dialog.getSaveFileName(parent, "Save plot", "",
-                                               filters.join(";;"), &selected_filter);
+  _save_filename =
+      save_dialog.getSaveFileName(parent, "Save plot", "", filters.join(";;"), &selected_filter);
   if (_save_filename.isEmpty())
     return;
 
@@ -83,8 +83,7 @@ void PlotSaveHelper::paint(QwtPlot* plot, QRect paint_at) const
   _renderer->render(plot, _painter.get(), paint_at);
 }
 
-void PlotSaveHelper::paintTitle(const QString& title, QRectF paint_at,
-                                QWidget* parent) const
+void PlotSaveHelper::paintTitle(const QString& title, QRectF paint_at, QWidget* parent) const
 {
   if (_save_filename.isEmpty())
     return;

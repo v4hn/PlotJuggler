@@ -32,8 +32,7 @@ DataLoadParquet::DataLoadParquet()
 
   QSettings settings;
 
-  bool radio_index_checked =
-      settings.value("DataLoadParquet::radioIndexChecked", false).toBool();
+  bool radio_index_checked = settings.value("DataLoadParquet::radioIndexChecked", false).toBool();
   ui->radioButtonIndex->setChecked(radio_index_checked);
 
   bool parse_date_time = settings.value("DataLoadParquet::parseDateTime", false).toBool();
@@ -86,9 +85,8 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
     column_type.push_back(type);
     converted_column_type.push_back(converted_type);
 
-    valid_column[col] =
-        (type == Type::BOOLEAN || type == Type::INT32 || type == Type::INT64 ||
-         type == Type::FLOAT || type == Type::DOUBLE);
+    valid_column[col] = (type == Type::BOOLEAN || type == Type::INT32 || type == Type::INT64 ||
+                         type == Type::FLOAT || type == Type::DOUBLE);
 
     ui->listWidgetSeries->addItem(QString::fromStdString(column->name()));
   }
@@ -97,8 +95,7 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
     QSettings settings;
     if (_default_time_axis.isEmpty())
     {
-      _default_time_axis =
-          settings.value("DataLoadParquet::prevTimestamp", {}).toString();
+      _default_time_axis = settings.value("DataLoadParquet::prevTimestamp", {}).toString();
     }
 
     if (_default_time_axis.isEmpty() == false)
@@ -130,10 +127,8 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
 
   QSettings settings;
   settings.setValue("DataLoadParquet::prevTimestamp", selected_stamp);
-  settings.setValue("DataLoadParquet::radioIndexChecked",
-                    ui->radioButtonIndex->isChecked());
-  settings.setValue("DataLoadParquet::parseDateTime",
-                    ui->checkBoxDateFormat->isChecked());
+  settings.setValue("DataLoadParquet::radioIndexChecked", ui->radioButtonIndex->isChecked());
+  settings.setValue("DataLoadParquet::parseDateTime", ui->checkBoxDateFormat->isChecked());
   settings.setValue("DataLoadParquet::dateFromat", ui->lineEditDateFormat->text());
 
   //-----------------------------

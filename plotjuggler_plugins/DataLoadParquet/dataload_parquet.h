@@ -33,8 +33,7 @@ public:
 
   QString selectedSeries() const;
 
-  virtual bool xmlSaveState(QDomDocument& doc,
-                            QDomElement& parent_element) const override;
+  virtual bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
 
   virtual bool xmlLoadState(const QDomElement& parent_element) override;
 

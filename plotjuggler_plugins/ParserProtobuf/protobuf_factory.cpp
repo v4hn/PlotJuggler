@@ -25,8 +25,7 @@ ParserFactoryProtobuf::ParserFactoryProtobuf()
 
   connect(ui->pushButtonInclude, &QPushButton::clicked, this,
           &ParserFactoryProtobuf::onIncludeDirectory);
-  connect(ui->pushButtonLoad, &QPushButton::clicked, this,
-          &ParserFactoryProtobuf::onLoadFile);
+  connect(ui->pushButtonLoad, &QPushButton::clicked, this, &ParserFactoryProtobuf::onLoadFile);
   connect(ui->pushButtonRemove, &QPushButton::clicked, this,
           &ParserFactoryProtobuf::onRemoveInclude);
 
@@ -71,8 +70,8 @@ void ParserFactoryProtobuf::importFile(QString filename)
   {
     if (error_collector.errors().size() > 0)
     {
-      QMessageBox::warning(nullptr, "Error parsing Proto file",
-                           error_collector.errors().front(), QMessageBox::Cancel);
+      QMessageBox::warning(nullptr, "Error parsing Proto file", error_collector.errors().front(),
+                           QMessageBox::Cancel);
     }
     return;
   }
@@ -168,8 +167,7 @@ void ParserFactoryProtobuf::onIncludeDirectory()
 {
   QSettings settings;
   QString directory_path =
-      settings.value("ProtobufParserCreator.loadDirectory", QDir::currentPath())
-          .toString();
+      settings.value("ProtobufParserCreator.loadDirectory", QDir::currentPath()).toString();
 
   QString dirname =
       QFileDialog::getExistingDirectory(_widget, tr("Load StyleSheet"), directory_path);
@@ -190,11 +188,10 @@ void ParserFactoryProtobuf::onLoadFile()
   QSettings settings;
 
   QString directory_path =
-      settings.value("ProtobufParserCreator.loadDirectory", QDir::currentPath())
-          .toString();
+      settings.value("ProtobufParserCreator.loadDirectory", QDir::currentPath()).toString();
 
-  QString filename = QFileDialog::getOpenFileName(_widget, tr("Load StyleSheet"),
-                                                  directory_path, tr("(*.proto)"));
+  QString filename =
+      QFileDialog::getOpenFileName(_widget, tr("Load StyleSheet"), directory_path, tr("(*.proto)"));
   if (filename.isEmpty())
   {
     return;

@@ -299,8 +299,7 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   QSettings settings;
   _dialog->restoreGeometry(settings.value("DataLoadCSV.geometry").toByteArray());
 
-  _ui->radioButtonIndex->setChecked(
-      settings.value("DataLoadCSV.useIndex", false).toBool());
+  _ui->radioButtonIndex->setChecked(settings.value("DataLoadCSV.useIndex", false).toBool());
   bool use_custom_time = settings.value("DataLoadCSV.useDateFormat", false).toBool();
   if (use_custom_time)
   {
@@ -348,8 +347,8 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   }
 
   QString theme = settings.value("StyleSheet::theme", "light").toString();
-  auto style_path = (theme == "light") ? ":/resources/lua_style_light.xml" :
-                                         ":/resources/lua_style_dark.xml";
+  auto style_path =
+      (theme == "light") ? ":/resources/lua_style_light.xml" : ":/resources/lua_style_dark.xml";
 
   QFile fl(style_path);
   if (fl.open(QIODevice::ReadOnly))
@@ -364,8 +363,8 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   // temporary connection
   std::unique_ptr<QObject> pcontext(new QObject);
   QObject* context = pcontext.get();
-  QObject::connect(_ui->comboBox, qOverload<int>(&QComboBox::currentIndexChanged),
-                   context, [&](int index) {
+  QObject::connect(_ui->comboBox, qOverload<int>(&QComboBox::currentIndexChanged), context,
+                   [&](int index) {
                      const std::array<char, 4> delimiters = { ',', ';', ' ', '\t' };
                      _delimiter = delimiters[std::clamp(index, 0, 3)];
                      _csvHighlighter.delimiter = _delimiter;
@@ -632,14 +631,13 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     {
       if (!skipped_wrong_column)
       {
-        auto ret =
-            QMessageBox::warning(nullptr, "Unexpected column count",
-                                 tr("Line %1 has %2 columns, but the expected number of "
-                                    "columns is %3.\n Do you want to continue?")
-                                     .arg(linenumber)
-                                     .arg(string_items.size())
-                                     .arg(column_names.size()),
-                                 QMessageBox::Yes | QMessageBox::Abort, QMessageBox::Yes);
+        auto ret = QMessageBox::warning(nullptr, "Unexpected column count",
+                                        tr("Line %1 has %2 columns, but the expected number of "
+                                           "columns is %3.\n Do you want to continue?")
+                                            .arg(linenumber)
+                                            .arg(string_items.size())
+                                            .arg(column_names.size()),
+                                        QMessageBox::Yes | QMessageBox::Abort, QMessageBox::Yes);
         if (ret == QMessageBox::Abort)
         {
           return false;
@@ -685,8 +683,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
                                              "\"%2\".\n Do you want to continue?")
                                               .arg(linenumber)
                                               .arg(t_str),
-                                          QMessageBox::Yes | QMessageBox::Abort,
-                                          QMessageBox::Yes);
+                                          QMessageBox::Yes | QMessageBox::Abort, QMessageBox::Yes);
           if (ret == QMessageBox::Abort)
           {
             return false;
@@ -721,8 +718,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
                                    .arg(time_index)
                                    .arg(timeName));
 
-        QPushButton* sortButton =
-            msgBox.addButton(tr("Continue"), QMessageBox::ActionRole);
+        QPushButton* sortButton = msgBox.addButton(tr("Continue"), QMessageBox::ActionRole);
         QPushButton* abortButton = msgBox.addButton(QMessageBox::Abort);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();

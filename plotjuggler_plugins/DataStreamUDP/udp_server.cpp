@@ -126,9 +126,8 @@ bool UDP_Server::start(QStringList*)
     }
   };
 
-  connect(dialog.ui->comboBoxProtocol,
-          qOverload<const QString&>(&QComboBox::currentIndexChanged), this,
-          onComboChanged);
+  connect(dialog.ui->comboBoxProtocol, qOverload<const QString&>(&QComboBox::currentIndexChanged),
+          this, onComboChanged);
 
   dialog.ui->comboBoxProtocol->setCurrentText(protocol);
   onComboChanged(protocol);
@@ -176,8 +175,7 @@ bool UDP_Server::start(QStringList*)
       bind_address = QHostAddress::AnyIPv6;
     }
     success &= _udp_socket->bind(bind_address, port,
-                                 QAbstractSocket::ShareAddress |
-                                     QAbstractSocket::ReuseAddressHint);
+                                 QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     if (!success)
     {
       qDebug() << tr("Couldn't bind IPv%3 UDP socket (%1, %2)")
@@ -191,8 +189,7 @@ bool UDP_Server::start(QStringList*)
     for (const auto& interface : QNetworkInterface::allInterfaces())
     {
       QNetworkInterface::InterfaceFlags iflags = interface.flags();
-      if (success && interface.isValid() &&
-          !iflags.testFlag(QNetworkInterface::IsLoopBack) &&
+      if (success && interface.isValid() && !iflags.testFlag(QNetworkInterface::IsLoopBack) &&
           iflags.testFlag(QNetworkInterface::CanMulticast) &&
           iflags.testFlag(QNetworkInterface::IsRunning))
       {
@@ -218,10 +215,7 @@ bool UDP_Server::start(QStringList*)
 
   if (success)
   {
-    qDebug() << tr("IPv%3 UDP listening on (%1, %2)")
-                    .arg(address_str)
-                    .arg(port)
-                    .arg(ip_version);
+    qDebug() << tr("IPv%3 UDP listening on (%1, %2)").arg(address_str).arg(port).arg(ip_version);
   }
   else
   {

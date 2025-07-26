@@ -28,8 +28,7 @@ inline auto plotSize()
 {
   QSettings settings;
   QSize result =
-      settings.value("Preferences::export_plot_size", default_document_dimentions)
-          .toSize();
+      settings.value("Preferences::export_plot_size", default_document_dimentions).toSize();
 
   return result;
 }

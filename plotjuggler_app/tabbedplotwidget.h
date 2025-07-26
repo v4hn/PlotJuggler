@@ -22,8 +22,8 @@ public:
   {
   } MainWindowArea;
 
-  explicit TabbedPlotWidget(QString name, QMainWindow* main_window,
-                            PlotDataMapRef& mapped_data, QMainWindow* parent);
+  explicit TabbedPlotWidget(QString name, QMainWindow* main_window, PlotDataMapRef& mapped_data,
+                            QMainWindow* parent);
 
   PlotDocker* currentTab();
 

@@ -69,8 +69,7 @@ TabbedPlotWidget::TabbedPlotWidget(QString name, QMainWindow* mainwindow,
   tabWidget()->tabBar()->installEventFilter(this);
 
   _action_savePlots = new QAction(tr("&Save plots to file"), this);
-  connect(_action_savePlots, &QAction::triggered, this,
-          &TabbedPlotWidget::on_savePlotsToFile);
+  connect(_action_savePlots, &QAction::triggered, this, &TabbedPlotWidget::on_savePlotsToFile);
 
   _tab_menu = new QMenu(this);
   _tab_menu->addSeparator();
@@ -82,11 +81,9 @@ TabbedPlotWidget::TabbedPlotWidget(QString name, QMainWindow* mainwindow,
 
   _action_savePlots->setIcon(LoadSvg(":/resources/svg/save.svg", theme));
 
-  connect(this, &TabbedPlotWidget::destroyed, main_window,
-          &MainWindow::on_tabbedAreaDestroyed);
+  connect(this, &TabbedPlotWidget::destroyed, main_window, &MainWindow::on_tabbedAreaDestroyed);
   connect(this, &TabbedPlotWidget::tabAdded, main_window, &MainWindow::onPlotTabAdded);
-  connect(this, &TabbedPlotWidget::undoableChange, main_window,
-          &MainWindow::onUndoableChange);
+  connect(this, &TabbedPlotWidget::undoableChange, main_window, &MainWindow::onUndoableChange);
 
   // TODO connect(_tabWidget, &TabWidget::movingPlotWidgetToTab, this,
   // &TabbedPlotWidget::onMoveWidgetIntoNewTab);
@@ -98,8 +95,7 @@ TabbedPlotWidget::TabbedPlotWidget(QString name, QMainWindow* mainwindow,
   _buttonAddTab->setFixedSize(QSize(32, 32));
   _buttonAddTab->setFocusPolicy(Qt::NoFocus);
 
-  connect(_buttonAddTab, &QPushButton::pressed, this,
-          &TabbedPlotWidget::on_addTabButton_pressed);
+  connect(_buttonAddTab, &QPushButton::pressed, this, &TabbedPlotWidget::on_addTabButton_pressed);
 }
 
 void TabbedPlotWidget::paintEvent(QPaintEvent* event)
@@ -165,9 +161,8 @@ PlotDocker* TabbedPlotWidget::addTab(QString tab_name)
 
   close_button->setFixedSize(QSize(16, 16));
   close_button->setFlat(true);
-  connect(close_button, &QPushButton::pressed, this, [this]() {
-    on_tabWidget_tabCloseRequested(tabWidget()->tabBar()->currentIndex());
-  });
+  connect(close_button, &QPushButton::pressed, this,
+          [this]() { on_tabWidget_tabCloseRequested(tabWidget()->tabBar()->currentIndex()); });
 
   layout->addWidget(close_button);
   tabWidget()->tabBar()->setTabButton(index, QTabBar::RightSide, button_widget);
@@ -252,9 +247,8 @@ void TabbedPlotWidget::on_renameCurrentTab()
   int idx = tabWidget()->tabBar()->currentIndex();
 
   bool ok = true;
-  QString newName =
-      QInputDialog::getText(this, tr("Change the tab name"), tr("New name:"),
-                            QLineEdit::Normal, tabWidget()->tabText(idx), &ok);
+  QString newName = QInputDialog::getText(this, tr("Change the tab name"), tr("New name:"),
+                                          QLineEdit::Normal, tabWidget()->tabText(idx), &ok);
   if (ok)
   {
     tabWidget()->setTabText(idx, newName);

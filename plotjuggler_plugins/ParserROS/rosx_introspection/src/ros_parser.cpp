@@ -204,8 +204,7 @@ bool Parser::deserialize(Span<const uint8_t> buffer, FlatMessage* flat_container
             Variant var = deserializer->deserialize(field_type.typeID());
             if (DO_STORE_ARRAY)
             {
-              flat_container->value[value_index] =
-                  std::make_pair(new_tree_leaf, std::move(var));
+              flat_container->value[value_index] = std::make_pair(new_tree_leaf, std::move(var));
               value_index++;
             }
           }
@@ -230,8 +229,7 @@ bool Parser::deserialize(Span<const uint8_t> buffer, FlatMessage* flat_container
 
   FieldLeaf rootnode;
   rootnode.node = _schema->field_tree.croot();
-  auto root_msg =
-      _schema->field_tree.croot()->value()->getMessagePtr(_schema->msg_library);
+  auto root_msg = _schema->field_tree.croot()->value()->getMessagePtr(_schema->msg_library);
 
   deserializeImpl(root_msg.get(), rootnode, true);
 

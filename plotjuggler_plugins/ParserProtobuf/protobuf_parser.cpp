@@ -6,8 +6,7 @@
 namespace gp = google::protobuf;
 
 ProtobufParser::ProtobufParser(const std::string& topic_name, const std::string type_name,
-                               const gp::FileDescriptorSet& descriptor_set,
-                               PlotDataMapRef& data)
+                               const gp::FileDescriptorSet& descriptor_set, PlotDataMapRef& data)
   : MessageParser(topic_name, data), _proto_pool(&_proto_database)
 {
   gp::FileDescriptorProto unused;
@@ -35,8 +34,7 @@ ProtobufParser::ProtobufParser(const std::string& topic_name, const std::string 
 
 bool ProtobufParser::parseMessage(const MessageRef serialized_msg, double& timestamp)
 {
-  const google::protobuf::Message* prototype_msg =
-      _msg_factory.GetPrototype(_msg_descriptor);
+  const google::protobuf::Message* prototype_msg = _msg_factory.GetPrototype(_msg_descriptor);
 
   google::protobuf::Message* mutable_msg = prototype_msg->New();
   if (!mutable_msg->ParseFromArray(serialized_msg.data(), serialized_msg.size()))
@@ -44,8 +42,7 @@ bool ProtobufParser::parseMessage(const MessageRef serialized_msg, double& times
     return false;
   }
 
-  std::function<void(const google::protobuf::Message&, const std::string&, const bool)>
-      ParseImpl;
+  std::function<void(const google::protobuf::Message&, const std::string&, const bool)> ParseImpl;
 
   ParseImpl = [&](const google::protobuf::Message& msg, const std::string& prefix,
                   const bool is_map) {
@@ -181,9 +178,8 @@ bool ProtobufParser::parseMessage(const MessageRef serialized_msg, double& times
 // Fix macro issue in Windows
 #pragma push_macro("GetMessage")
 #undef GetMessage
-            const auto& new_msg = repeated ?
-                                      reflection->GetRepeatedMessage(msg, field, index) :
-                                      reflection->GetMessage(msg, field);
+            const auto& new_msg = repeated ? reflection->GetRepeatedMessage(msg, field, index) :
+                                             reflection->GetMessage(msg, field);
 #pragma pop_macro("GetMessage")
             if (field->is_map())
             {
@@ -196,28 +192,23 @@ bool ProtobufParser::parseMessage(const MessageRef serialized_msg, double& times
               {
                 // A map's key is a scalar type (except floats and bytes) or a string
                 case gp::FieldDescriptor::CPPTYPE_STRING: {
-                  suffix =
-                      fmt::format("/{}", map_reflection->GetString(new_msg, key_field));
+                  suffix = fmt::format("/{}", map_reflection->GetString(new_msg, key_field));
                 }
                 break;
                 case gp::FieldDescriptor::CPPTYPE_INT32: {
-                  suffix =
-                      fmt::format("/{}", map_reflection->GetInt32(new_msg, key_field));
+                  suffix = fmt::format("/{}", map_reflection->GetInt32(new_msg, key_field));
                 }
                 break;
                 case gp::FieldDescriptor::CPPTYPE_INT64: {
-                  suffix =
-                      fmt::format("/{}", map_reflection->GetInt64(new_msg, key_field));
+                  suffix = fmt::format("/{}", map_reflection->GetInt64(new_msg, key_field));
                 }
                 break;
                 case gp::FieldDescriptor::CPPTYPE_UINT32: {
-                  suffix =
-                      fmt::format("/{}", map_reflection->GetUInt32(new_msg, key_field));
+                  suffix = fmt::format("/{}", map_reflection->GetUInt32(new_msg, key_field));
                 }
                 break;
                 case gp::FieldDescriptor::CPPTYPE_UINT64: {
-                  suffix =
-                      fmt::format("/{}", map_reflection->GetUInt64(new_msg, key_field));
+                  suffix = fmt::format("/{}", map_reflection->GetUInt64(new_msg, key_field));
                 }
                 break;
               }

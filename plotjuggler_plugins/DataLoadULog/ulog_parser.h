@@ -151,8 +151,7 @@ private:
 
   std::streampos _data_section_start;  ///< first ADD_LOGGED_MSG message
 
-  int64_t _read_until_file_position =
-      1ULL << 60;  ///< read limit if log contains appended data
+  int64_t _read_until_file_position = 1ULL << 60;  ///< read limit if log contains appended data
 
   std::set<std::string> _overridden_params;
 
@@ -172,6 +171,6 @@ private:
 
   void parseDataMessage(const Subscription& sub, char* message);
 
-  char* parseSimpleDataMessage(Timeseries& timeseries, const Format* format,
-                               char* message, size_t* index);
+  char* parseSimpleDataMessage(Timeseries& timeseries, const Format* format, char* message,
+                               size_t* index);
 };

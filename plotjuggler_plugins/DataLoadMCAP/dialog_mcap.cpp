@@ -10,11 +10,10 @@
 
 const QString DialogMCAP::prefix = "DialogLoadMCAP::";
 
-DialogMCAP::DialogMCAP(
-    const std::unordered_map<int, mcap::ChannelPtr>& channels,
-    const std::unordered_map<int, mcap::SchemaPtr>& schemas,
-    const std::unordered_map<uint16_t, uint64_t>& messages_count_by_channelID,
-    std::optional<mcap::LoadParams> default_parameters, QWidget* parent)
+DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels,
+                       const std::unordered_map<int, mcap::SchemaPtr>& schemas,
+                       const std::unordered_map<uint16_t, uint64_t>& messages_count_by_channelID,
+                       std::optional<mcap::LoadParams> default_parameters, QWidget* parent)
   : QDialog(parent)
   , ui(new Ui::dialog_mcap)
   , _select_all(QKeySequence(Qt::CTRL + Qt::Key_A), this)
@@ -33,8 +32,7 @@ DialogMCAP::DialogMCAP(
   connect(&_select_all, &QShortcut::activated, ui->tableWidget, [this]() {
     for (int row = 0; row < ui->tableWidget->rowCount(); row++)
     {
-      if (!ui->tableWidget->isRowHidden(row) &&
-          !ui->tableWidget->item(row, 0)->isSelected())
+      if (!ui->tableWidget->isRowHidden(row) && !ui->tableWidget->item(row, 0)->isSelected())
       {
         ui->tableWidget->selectRow(row);
       }
@@ -45,12 +43,9 @@ DialogMCAP::DialogMCAP(
           &QAbstractItemView::clearSelection);
 
   ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-  ui->tableWidget->horizontalHeader()->setSectionResizeMode(
-      1, QHeaderView::ResizeToContents);
-  ui->tableWidget->horizontalHeader()->setSectionResizeMode(
-      2, QHeaderView::ResizeToContents);
-  ui->tableWidget->horizontalHeader()->setSectionResizeMode(
-      3, QHeaderView::ResizeToContents);
+  ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+  ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+  ui->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 
   ui->tableWidget->setRowCount(channels.size());
 
@@ -64,8 +59,7 @@ DialogMCAP::DialogMCAP(
     params.clamp_large_arrays = settings.value(prefix + "clamp", true).toBool();
     params.max_array_size = settings.value(prefix + "max_array", 500).toInt();
     params.use_timestamp = settings.value(prefix + "use_timestamp", false).toBool();
-    params.use_mcap_log_time =
-        settings.value(prefix + "use_mcap_log_time", false).toBool();
+    params.use_mcap_log_time = settings.value(prefix + "use_mcap_log_time", false).toBool();
     params.sorted_column = settings.value(prefix + "sorted_column", 0).toInt();
   }
   else
@@ -102,16 +96,13 @@ DialogMCAP::DialogMCAP(
     auto const& schema = schemas.at(channel->schemaId);
 
     ui->tableWidget->setItem(row, 0, new QTableWidgetItem(topic));
-    ui->tableWidget->setItem(row, 1,
-                             new QTableWidgetItem(QString::fromStdString(schema->name)));
-    ui->tableWidget->setItem(
-        row, 2, new QTableWidgetItem(QString::fromStdString(schema->encoding)));
+    ui->tableWidget->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(schema->name)));
+    ui->tableWidget->setItem(row, 2,
+                             new QTableWidgetItem(QString::fromStdString(schema->encoding)));
 
     auto count_it = messages_count_by_channelID.find(id);
-    int message_count =
-        (count_it != messages_count_by_channelID.end()) ? count_it->second : 0;
-    ui->tableWidget->setItem(row, 3,
-                             new QTableWidgetItem(QString::number(message_count)));
+    int message_count = (count_it != messages_count_by_channelID.end()) ? count_it->second : 0;
+    ui->tableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(message_count)));
 
     for (int col = 0; col < columns_count; ++col)
     {
@@ -128,9 +119,8 @@ DialogMCAP::DialogMCAP(
     }
     row++;
   }
-  auto sort_order = (params.sorted_column >= columns_count) ?
-                        Qt::SortOrder::DescendingOrder :
-                        Qt::SortOrder::AscendingOrder;
+  auto sort_order = (params.sorted_column >= columns_count) ? Qt::SortOrder::DescendingOrder :
+                                                              Qt::SortOrder::AscendingOrder;
   auto sort_count = params.sorted_column % columns_count;
   ui->tableWidget->sortByColumn(sort_count, sort_order);
 }

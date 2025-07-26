@@ -216,8 +216,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     try
     {
       auto& parser_factory = it->second;
-      auto parser =
-          parser_factory->createParser(topic_name, schema->name, definition, plot_data);
+      auto parser = parser_factory->createParser(topic_name, schema->name, definition, plot_data);
 
       parsers_by_channel.insert({ channel_ptr->id, parser });
     }
@@ -237,8 +236,8 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     for (const auto& [schema_name, failed_parser_info] : parsers_blacklist)
     {
       error_message += QString("Schema: %1\n").arg(QString::fromStdString(schema_name));
-      error_message += QString("Error: %1\n")
-                           .arg(QString::fromStdString(failed_parser_info.error_message));
+      error_message +=
+          QString("Error: %1\n").arg(QString::fromStdString(failed_parser_info.error_message));
       error_message += QString("Topics affected: \n");
       for (const auto& topic : failed_parser_info.topics)
       {
@@ -288,8 +287,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
 
   size_t msg_count = 0;
 
-  auto new_progress_update =
-      std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
+  auto new_progress_update = std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
 
   for (const auto& msg_view : messages)
   {

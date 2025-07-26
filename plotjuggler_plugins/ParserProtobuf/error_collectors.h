@@ -37,17 +37,13 @@ class FileErrorCollector : public google::protobuf::compiler::MultiFileErrorColl
 {
 public:
 #if GOOGLE_PROTOBUF_VERSION >= 4022000
-  void RecordError(absl::string_view filename, int line, int,
-                   absl::string_view message) override;
+  void RecordError(absl::string_view filename, int line, int, absl::string_view message) override;
 
-  void RecordWarning(absl::string_view filename, int line, int,
-                     absl::string_view message) override;
+  void RecordWarning(absl::string_view filename, int line, int, absl::string_view message) override;
 #else
-  void AddError(const std::string& filename, int line, int,
-                const std::string& message) override;
+  void AddError(const std::string& filename, int line, int, const std::string& message) override;
 
-  void AddWarning(const std::string& filename, int line, int,
-                  const std::string& message) override;
+  void AddWarning(const std::string& filename, int line, int, const std::string& message) override;
 #endif
 
   const QStringList& errors()

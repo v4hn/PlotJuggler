@@ -315,8 +315,7 @@ size_t ULogParser::fieldsCount(const ULogParser::Format& format) const
   return count;
 }
 
-std::vector<StringView> ULogParser::splitString(const StringView& strToSplit,
-                                                char delimeter)
+std::vector<StringView> ULogParser::splitString(const StringView& strToSplit, char delimeter)
 {
   std::vector<StringView> splitted_strings;
   splitted_strings.reserve(4);
@@ -421,8 +420,7 @@ bool ULogParser::readFileDefinitions(DataStream& datastream)
 
       default:
         printf("unknown log definition type %i, size %i (offset %i)\n",
-               (int)message_header.msg_type, (int)message_header.msg_size,
-               (int)datastream.offset);
+               (int)message_header.msg_type, (int)message_header.msg_size, (int)datastream.offset);
         datastream.offset += message_header.msg_size;
         break;
     }
@@ -446,8 +444,7 @@ bool ULogParser::readFlagBits(DataStream& datastream, uint16_t msg_size)
   uint8_t* incompat_flags = message + 8;
 
   // handle & validate the flags
-  bool contains_appended_data =
-      incompat_flags[0] & ULOG_INCOMPAT_FLAG0_DATA_APPENDED_MASK;
+  bool contains_appended_data = incompat_flags[0] & ULOG_INCOMPAT_FLAG0_DATA_APPENDED_MASK;
   bool has_unknown_incompat_bits = false;
 
   if (incompat_flags[0] & ~0x1)

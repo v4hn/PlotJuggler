@@ -27,11 +27,11 @@ class DialogMCAP : public QDialog
   Q_OBJECT
 
 public:
-  explicit DialogMCAP(
-      const std::unordered_map<int, mcap::ChannelPtr>& channels,
-      const std::unordered_map<int, mcap::SchemaPtr>& schemas,
-      const std::unordered_map<uint16_t, uint64_t>& messages_count_by_channelID,
-      std::optional<mcap::LoadParams> default_parameters, QWidget* parent = nullptr);
+  explicit DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels,
+                      const std::unordered_map<int, mcap::SchemaPtr>& schemas,
+                      const std::unordered_map<uint16_t, uint64_t>& messages_count_by_channelID,
+                      std::optional<mcap::LoadParams> default_parameters,
+                      QWidget* parent = nullptr);
   ~DialogMCAP();
 
   mcap::LoadParams getParams() const;

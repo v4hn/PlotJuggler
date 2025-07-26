@@ -53,8 +53,8 @@ namespace llvm_vecsmall
 
 // std::is_pod has been deprecated in C++20.
 template <typename T>
-struct IsPod : std::integral_constant<bool, std::is_standard_layout<T>::value &&
-                                                std::is_trivial<T>::value>
+struct IsPod
+  : std::integral_constant<bool, std::is_standard_layout<T>::value && std::is_trivial<T>::value>
 {
 };
 
@@ -449,8 +449,7 @@ public:
 
 protected:
   // Default ctor - Initialize to empty.
-  explicit SmallVectorImpl(unsigned N)
-    : SmallVectorTemplateBase<T, IsPod<T>::value>(N * sizeof(T))
+  explicit SmallVectorImpl(unsigned N) : SmallVectorTemplateBase<T, IsPod<T>::value>(N * sizeof(T))
   {
   }
 
@@ -812,8 +811,7 @@ public:
 
   bool operator<(const SmallVectorImpl& RHS) const
   {
-    return std::lexicographical_compare(this->begin(), this->end(), RHS.begin(),
-                                        RHS.end());
+    return std::lexicographical_compare(this->begin(), this->end(), RHS.begin(), RHS.end());
   }
 
   /// Set the array size to \p N, which the current array must have enough
@@ -1115,16 +1113,14 @@ namespace std
 {
 /// Implement std::swap in terms of SmallVector swap.
 template <typename T>
-inline void swap(llvm_vecsmall::SmallVectorImpl<T>& LHS,
-                 llvm_vecsmall::SmallVectorImpl<T>& RHS)
+inline void swap(llvm_vecsmall::SmallVectorImpl<T>& LHS, llvm_vecsmall::SmallVectorImpl<T>& RHS)
 {
   LHS.swap(RHS);
 }
 
 /// Implement std::swap in terms of SmallVector swap.
 template <typename T, unsigned N>
-inline void swap(llvm_vecsmall::SmallVector<T, N>& LHS,
-                 llvm_vecsmall::SmallVector<T, N>& RHS)
+inline void swap(llvm_vecsmall::SmallVector<T, N>& LHS, llvm_vecsmall::SmallVector<T, N>& RHS)
 {
   LHS.swap(RHS);
 }

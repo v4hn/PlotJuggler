@@ -169,8 +169,7 @@ void CurveListPanel::updateAppearance()
         if (it != _plot_data.groups.end())
         {
           QVariant color_var = it->second->attribute(PJ::TEXT_COLOR);
-          QColor text_color =
-              color_var.isValid() ? color_var.value<QColor>() : default_color;
+          QColor text_color = color_var.isValid() ? color_var.value<QColor>() : default_color;
 
           QVariant style_var = it->second->attribute(PJ::ITALIC_FONTS);
           bool italic = (style_var.isValid() && style_var.value<bool>());
@@ -191,8 +190,7 @@ void CurveListPanel::updateAppearance()
     auto ChangeLeavesVisitor = [&](QTreeWidgetItem* cell) {
       if (cell->childCount() == 0)
       {
-        const std::string& curve_name =
-            cell->data(0, CustomRoles::Name).toString().toStdString();
+        const std::string& curve_name = cell->data(0, CustomRoles::Name).toString().toStdString();
 
         QVariant text_color;
 
@@ -485,8 +483,7 @@ void CurveListPanel::on_buttonAddCustom_clicked()
   on_lineEditFilter_textChanged(ui->lineEditFilter->text());
 }
 
-void CurveListPanel::onCustomSelectionChanged(const QItemSelection&,
-                                              const QItemSelection&)
+void CurveListPanel::onCustomSelectionChanged(const QItemSelection&, const QItemSelection&)
 {
   auto selected = _custom_view->getSelectedNames();
 
@@ -582,12 +579,10 @@ void CurveListPanel::on_pushButtonTrash_clicked(bool)
   QSettings settings;
   QString theme = settings.value("StyleSheet::theme", "light").toString();
 
-  QPushButton* buttonAll =
-      msgBox.addButton(tr("Delete All"), QMessageBox::DestructiveRole);
+  QPushButton* buttonAll = msgBox.addButton(tr("Delete All"), QMessageBox::DestructiveRole);
   buttonAll->setIcon(LoadSvg(":/resources/svg/clear.svg"));
 
-  QPushButton* buttonPoints =
-      msgBox.addButton(tr("Delete Points"), QMessageBox::DestructiveRole);
+  QPushButton* buttonPoints = msgBox.addButton(tr("Delete Points"), QMessageBox::DestructiveRole);
   buttonPoints->setIcon(LoadSvg(":/resources/svg/point_chart.svg"));
 
   msgBox.addButton(QMessageBox::Cancel);

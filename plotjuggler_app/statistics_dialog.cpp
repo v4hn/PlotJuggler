@@ -19,11 +19,10 @@ StatisticsDialog::StatisticsDialog(PlotWidget* parent)
 
   ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 
-  connect(ui->rangeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
-          [this]() {
-            auto rect = _parent->currentBoundingRect();
-            update({ rect.left(), rect.right() });
-          });
+  connect(ui->rangeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+    auto rect = _parent->currentBoundingRect();
+    update({ rect.left(), rect.right() });
+  });
 }
 
 StatisticsDialog::~StatisticsDialog()
