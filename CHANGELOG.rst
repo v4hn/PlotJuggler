@@ -2,6 +2,24 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Datatamer fix (`#1131 <https://github.com/facontidavide/PlotJuggler/issues/1131>`_)
+* new clang format
+* Squashed commit of the following:
+  Author: Maximilien Naveau <maximilien.naveau@pal-robotics.com>
+  Date:   Thu Jul 24 12:21:39 2025 +0200
+  Solve the PALStatistics message parsing in case several topic are
+  published.
+* Fix Issues on MacOS Compilation (`#1125 <https://github.com/facontidavide/PlotJuggler/issues/1125>`_)
+* Add no splash to settings (`#1122 <https://github.com/facontidavide/PlotJuggler/issues/1122>`_)
+  * Added option to skip splash screen to settings ini file
+  * Added option to preference screen
+* provide install rule again from catkin build (`#1124 <https://github.com/facontidavide/PlotJuggler/issues/1124>`_)
+  Otherwise catkin install workspaces include everything except for the binary...
+* try fix LZ4/ZSTD (`#1121 <https://github.com/facontidavide/PlotJuggler/issues/1121>`_)
+* Contributors: Connor Anderson, Davide Faconti, Michael Görner, thenoname
+
 3.10.10 (2025-07-11)
 --------------------
 * cosmetic change in Preferences
