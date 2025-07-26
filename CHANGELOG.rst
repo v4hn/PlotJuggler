@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.10.11 (2025-07-26)
+--------------------
 * Datatamer fix (`#1131 <https://github.com/facontidavide/PlotJuggler/issues/1131>`_)
 * new clang format
 * Squashed commit of the following:
