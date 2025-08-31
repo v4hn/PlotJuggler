@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.11.0 (2025-08-31)
+-------------------
 * Merge pull request `#1157 <https://github.com/facontidavide/PlotJuggler/issues/1157>`_ from facontidavide/conan_builds
   Conan builds
 * merge PR `#1139 <https://github.com/facontidavide/PlotJuggler/issues/1139>`_ and  `#1141 <https://github.com/facontidavide/PlotJuggler/issues/1141>`_ (from @gvz)
