@@ -1,13 +1,9 @@
 function(find_or_download_lz4)
 
-  # this should default to conan
-  find_package(lz4 QUIET CONFIG)
+  if(NOT TARGET LZ4::lz4_static)
 
-  if(TARGET LZ4::lz4_static)
+    message(STATUS "Downloading and compiling LZ4")
 
-    message(STATUS "Found LZ4 using conan")
-
-  else()
     # lz4 ###
     cpmaddpackage(
       NAME lz4
@@ -28,10 +24,6 @@ function(find_or_download_lz4)
       PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${lz4_SOURCE_DIR}/lib
                  INTERFACE_LINK_LIBRARIES lz4_static)
 
-  endif()
-
-  if(NOT TARGET LZ4::lz4_static)
-    message(FATAL_ERROR "LZ4 not found, please install LZ4 or download it")
   endif()
 
 endfunction()

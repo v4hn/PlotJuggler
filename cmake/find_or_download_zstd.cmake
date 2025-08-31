@@ -1,13 +1,9 @@
 function(find_or_download_zstd)
 
-  # this should default to conan
-  find_package(zstd QUIET CONFIG)
+  if(NOT TARGET zstd::libzstd_static)
 
-  if(TARGET zstd::libzstd_static)
+    message(STATUS "Downloading and compiling ZSTD")
 
-    message(STATUS "Found ZSTD in system (conan?)")
-
-  else()
     # zstd ###
     cpmaddpackage(
       NAME zstd
@@ -36,10 +32,7 @@ function(find_or_download_zstd)
     set_target_properties(zstd::libzstd_static PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${zstd_SOURCE_DIR}/lib
         INTERFACE_LINK_LIBRARIES libzstd_static)
-  endif()
 
-  if(NOT TARGET zstd::libzstd_static)
-    message(FATAL_ERROR "ZSTD not found, please install ZSTD or download it")
   endif()
 
 endfunction()
