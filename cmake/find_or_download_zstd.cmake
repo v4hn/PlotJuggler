@@ -4,7 +4,9 @@ function(find_or_download_zstd)
   find_package(zstd QUIET CONFIG)
 
   if(TARGET zstd::libzstd_static)
+
     message(STATUS "Found ZSTD in system (conan?)")
+
   else()
     # zstd ###
     cpmaddpackage(

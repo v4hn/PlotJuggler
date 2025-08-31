@@ -30,6 +30,7 @@ else()
     # mcap has no CMake support, so we create our own target
 
     add_library(mcap_static STATIC mcap.cpp)
+    set_target_properties(mcap_static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     target_include_directories(mcap_static PUBLIC
        $<BUILD_INTERFACE:${mcap_SOURCE_DIR}/cpp/mcap/include>
