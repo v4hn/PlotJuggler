@@ -49,13 +49,9 @@ if(catkin_FOUND)
   find_package(catkin REQUIRED COMPONENTS roslib roscpp)
 
   catkin_package(
-    INCLUDE_DIRS
-    plotjuggler_base/include
-    LIBRARIES
-    plotjuggler_base
-    CATKIN_DEPENDS
-    roslib
-    roscpp)
+    INCLUDE_DIRS plotjuggler_base/include
+    LIBRARIES plotjuggler_base
+    CATKIN_DEPENDS roslib roscpp)
 
   message(STATUS ${catkin_INCLUDE_DIRS})
 
@@ -68,6 +64,7 @@ elseif(ament_cmake_FOUND)
   find_package(ament_cmake REQUIRED)
   find_package(ament_index_cpp REQUIRED)
   find_package(rclcpp REQUIRED)
+
   include_directories(${ament_index_cpp_INCLUDE_DIRS})
 
   message(STATUS "--------------------------------------------------")
