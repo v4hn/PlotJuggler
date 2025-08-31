@@ -2,6 +2,44 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#1157 <https://github.com/facontidavide/PlotJuggler/issues/1157>`_ from facontidavide/conan_builds
+  Conan builds
+* merge PR `#1139 <https://github.com/facontidavide/PlotJuggler/issues/1139>`_ and  `#1141 <https://github.com/facontidavide/PlotJuggler/issues/1141>`_ (from @gvz)
+* fix mqtt username and password swap (`#1159 <https://github.com/facontidavide/PlotJuggler/issues/1159>`_)
+  fixes  `#1158 <https://github.com/facontidavide/PlotJuggler/issues/1158>`_
+* fix parquet
+* let CPM download LZ4 and ZSTD
+* fix conan builds
+* fix(ulog_parser): allow messages without timestamp field (`#1154 <https://github.com/facontidavide/PlotJuggler/issues/1154>`_)
+  use a fixed increment when no timestamp is logged
+* build debian packages in github actions (`#1146 <https://github.com/facontidavide/PlotJuggler/issues/1146>`_)
+  * build debian in actions
+  * add ubuntu:24.04 build
+  will enable ubuntu builds
+  * upload .deb files to releases
+  ---------
+  Co-authored-by: Georg von Zengen <georg.vonzengen@isaraerospace.com>
+* Add core24 snap (`#1100 <https://github.com/facontidavide/PlotJuggler/issues/1100>`_)
+  * add core24 snap
+  * add snap core24 github action
+* rename FindMosquitto.cmake to FindMOSQUITTO.cmake (`#1140 <https://github.com/facontidavide/PlotJuggler/issues/1140>`_)
+  fixes `#1138 <https://github.com/facontidavide/PlotJuggler/issues/1138>`_
+  Co-authored-by: Georg von Zengen <georg.vonzengen@isaraerospace.com>
+* Fix error 127 from linuxdeploy in Docker builds (`#1149 <https://github.com/facontidavide/PlotJuggler/issues/1149>`_)
+  * dockerfile: set APPIMAGE_EXTRACT_AND_RUN so linuxdeploy-qt works in Docker
+  The Qt plugin is a separate AppImage, and the CLI flag doesn’t propagate.
+  Exporting the env var makes both linuxdeploy and the plugin run in extract-and-run
+  mode, avoiding FUSE and fixing exit code 127 in container builds.
+  * dockerfile: fix warning from inconsistent case
+* Fix protobuf compilation on linux hosts (`#1143 <https://github.com/facontidavide/PlotJuggler/issues/1143>`_)
+  * fix PROTOBUF_FOUND for case sentitive systems
+  * fix compiler error in ParserProtobuf on linux
+  ---------
+  Co-authored-by: Georg von Zengen <georg.vonzengen@isaraerospace.com>
+* Contributors: Davide Faconti, Georg von Zengen, Mathieu Bresciani, giusebar, Øyvind Taksdal Stubhaug
+
 3.10.11 (2025-07-26)
 --------------------
 * Datatamer fix (`#1131 <https://github.com/facontidavide/PlotJuggler/issues/1131>`_)
