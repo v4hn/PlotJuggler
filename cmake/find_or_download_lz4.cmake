@@ -17,6 +17,7 @@ function(find_or_download_lz4)
     file(GLOB LZ4_SOURCES ${lz4_SOURCE_DIR}/lib/*.c)
     add_library(lz4_static STATIC ${LZ4_SOURCES})
     target_include_directories(lz4_static PUBLIC ${lz4_SOURCE_DIR}/lib)
+    set_property(TARGET lz4_static PROPERTY POSITION_INDEPENDENT_CODE ON)
 
     set(LZ4_FOUND TRUE)
 
