@@ -1,5 +1,10 @@
 find_package(Arrow QUIET CONFIG)
-find_package(Parquet QUIET)
+
+# when using conan, Parquet::parquet_static is found, otherwise
+# we need to do find_package(Parquet)
+if(NOT TARGET Parquet::parquet_static)
+  find_package(Parquet QUIET)
+endif()
 
 if(TARGET Parquet::parquet_static)
 
