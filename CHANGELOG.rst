@@ -2,6 +2,20 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update windows.yaml
+* Update ubuntu.yaml
+* git pushMerge branch 'main' of github.com:facontidavide/PlotJuggler
+* refactored Parquet plugin
+* CI: rename .deb file before uploading
+  fixes the uploading of the artifacts, without this the file can not be
+  found in the release upload
+  CI: rename .deb file before uploading
+  fixes the uploading of the artifacts, without this the file can not be
+  found in the release upload
+* Contributors: Davide Faconti, Georg von Zengen
+
 3.11.0 (2025-08-31)
 -------------------
 * Merge pull request `#1157 <https://github.com/facontidavide/PlotJuggler/issues/1157>`_ from facontidavide/conan_builds
