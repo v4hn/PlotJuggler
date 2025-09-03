@@ -57,7 +57,7 @@ jobs:
         run: |
             cmake . -B build -DCMAKE_BUILD_TYPE=Release \
                   -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-            cmake --build build --parallel
+            cmake --build build
 
       - name: Build AppImage
         working-directory: ${{ github.workspace }}
