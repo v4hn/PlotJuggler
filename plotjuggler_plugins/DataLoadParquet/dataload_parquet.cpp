@@ -8,6 +8,7 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QListWidget>
+#include <cmath>
 
 DataLoadParquet::DataLoadParquet()
 {
@@ -38,7 +39,7 @@ DataLoadParquet::DataLoadParquet()
   bool parse_date_time = settings.value("DataLoadParquet::parseDateTime", false).toBool();
   ui->checkBoxDateFormat->setChecked(parse_date_time);
 
-  QString date_format = settings.value("DataLoadParquet::dateFromat", false).toString();
+  QString date_format = settings.value("DataLoadParquet::dateFromat", "").toString();
   if (date_format.isEmpty() == false)
   {
     ui->lineEditDateFormat->setText(date_format);
@@ -54,6 +55,14 @@ const std::vector<const char*>& DataLoadParquet::compatibleFileExtensions() cons
 {
   static std::vector<const char*> extensions = { "parquet" };
   return extensions;
+}
+
+template <typename T>
+double get_numeric_value(parquet::StreamReader& os)
+{
+  parquet::StreamReader::optional<T> tmp;
+  os >> tmp;
+  return tmp ? static_cast<double>(*tmp) : std::numeric_limits<double>::quiet_NaN();
 }
 
 bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
@@ -72,22 +81,35 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
   const auto schema = file_metadata->schema();
   const size_t num_columns = file_metadata->num_columns();
 
-  std::vector<parquet::Type::type> column_type;
-  std::vector<parquet::ConvertedType::type> converted_column_type;
-  std::vector<bool> valid_column(num_columns, true);
+  struct ColumnInfo
+  {
+    std::string name;
+    parquet::Type::type column_type;
+    parquet::ConvertedType::type converted_column_type;
+    bool is_valid;
+    PlotData* plot_data = nullptr;
+  };
+
+  std::vector<ColumnInfo> columns_info(num_columns);
 
   for (size_t col = 0; col < num_columns; col++)
   {
-    auto column = schema->Column(col);
-    auto type = column->physical_type();
-    auto converted_type = column->converted_type();
+    const auto column = schema->Column(col);
+    ColumnInfo info;
+    info.name = column->name();
+    info.column_type = column->physical_type();
+    info.converted_column_type = column->converted_type();
 
-    column_type.push_back(type);
-    converted_column_type.push_back(converted_type);
+    info.is_valid = (info.column_type == Type::BOOLEAN || info.column_type == Type::INT32 ||
+                     info.column_type == Type::INT64 || info.column_type == Type::FLOAT ||
+                     info.column_type == Type::DOUBLE);
 
-    valid_column[col] = (type == Type::BOOLEAN || type == Type::INT32 || type == Type::INT64 ||
-                         type == Type::FLOAT || type == Type::DOUBLE);
+    if (info.is_valid)
+    {
+      info.plot_data = &plot_data.getOrCreateNumeric(info.name, nullptr);
+    }
 
+    columns_info[col] = info;
     ui->listWidgetSeries->addItem(QString::fromStdString(column->name()));
   }
 
@@ -135,114 +157,95 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
   // Time to parse
   int timestamp_column = -1;
 
-  std::vector<PlotData*> series(num_columns, nullptr);
-
   for (size_t col = 0; col < num_columns; col++)
   {
-    auto column = schema->Column(col);
-    const std::string& name = column->name();
-    if (name == selected_stamp.toStdString())
+    if (columns_info[col].name == selected_stamp.toStdString())
     {
       timestamp_column = col;
-    }
-    if (valid_column[col])
-    {
-      series[col] = &(plot_data.addNumeric(name)->second);
+      break;
     }
   }
 
+  QProgressDialog progress_dialog;
+  progress_dialog.setWindowTitle("Loading the Parquet file");
+  progress_dialog.setLabelText("Loading... please wait");
+  progress_dialog.setWindowModality(Qt::ApplicationModal);
+  progress_dialog.setRange(0, parquet_reader_->metadata()->num_rows());
+  progress_dialog.setAutoClose(true);
+  progress_dialog.setAutoReset(true);
+  progress_dialog.show();
+
   parquet::StreamReader os{ std::move(parquet_reader_) };
 
-  std::vector<double> row_values(num_columns, 0.0);
+  constexpr auto NaN = std::numeric_limits<double>::quiet_NaN();
+  std::vector<double> row_values(num_columns, NaN);
 
   int row = 0;
+
   while (!os.eof())
   {
     // extract an entire row
     for (size_t col = 0; col < num_columns; col++)
     {
-      if (!valid_column[col])
+      const auto& info = columns_info[col];
+      if (!info.is_valid)
       {
         os.SkipColumns(1);
         continue;
       }
-      auto type = column_type[col];
-      auto converted_type = converted_column_type[col];
 
-      switch (type)
+      switch (info.column_type)
       {
         case Type::BOOLEAN: {
-          bool tmp;
-          os >> tmp;
-          row_values[col] = static_cast<double>(tmp);
+          row_values[col] = get_numeric_value<bool>(os);
           break;
         }
         case Type::INT32:
         case Type::INT64: {
-          switch (converted_type)
+          switch (info.converted_column_type)
           {
             case ConvertedType::INT_8: {
-              int8_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<int8_t>(os);
               break;
             }
             case ConvertedType::INT_16: {
-              int16_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<int16_t>(os);
               break;
             }
             case ConvertedType::INT_32: {
-              int32_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<int32_t>(os);
               break;
             }
             case ConvertedType::INT_64: {
-              int64_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<int64_t>(os);
               break;
             }
             case ConvertedType::UINT_8: {
-              uint8_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<uint8_t>(os);
               break;
             }
             case ConvertedType::UINT_16: {
-              uint16_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<uint16_t>(os);
               break;
             }
             case ConvertedType::UINT_32: {
-              uint32_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<uint32_t>(os);
               break;
             }
             case ConvertedType::UINT_64: {
-              uint64_t tmp;
-              os >> tmp;
-              row_values[col] = static_cast<double>(tmp);
+              row_values[col] = get_numeric_value<uint64_t>(os);
               break;
             }
             default: {
               // Fallback in case no converted type is provided
-              switch (type)
+              switch (info.column_type)
               {
                 case Type::INT32: {
-                  int32_t tmp;
-                  os >> tmp;
-                  row_values[col] = static_cast<double>(tmp);
+                  row_values[col] = get_numeric_value<int32_t>(os);
                   break;
                 }
                 case Type::INT64: {
-                  int64_t tmp;
-                  os >> tmp;
-                  row_values[col] = static_cast<double>(tmp);
+                  row_values[col] = get_numeric_value<int64_t>(os);
                   break;
                 }
               }
@@ -251,13 +254,11 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
           break;
         }
         case Type::FLOAT: {
-          float tmp;
-          os >> tmp;
-          row_values[col] = static_cast<double>(tmp);
+          row_values[col] = get_numeric_value<float>(os);
           break;
         }
         case Type::DOUBLE: {
-          os >> row_values[col];
+          row_values[col] = get_numeric_value<double>(os);
           break;
         }
         default: {
@@ -272,17 +273,25 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
 
     for (size_t col = 0; col < num_columns; col++)
     {
-      if (!valid_column[col])
+      auto& info = columns_info[col];
+      const auto& value = row_values[col];
+      if (info.is_valid && !std::isnan(value))
       {
-        continue;
+        info.plot_data->pushBack({ timestamp, value });
       }
+    }
 
-      if (valid_column[col])
+    if (row % 100 == 0)
+    {
+      progress_dialog.setValue(row);
+      QApplication::processEvents();
+      if (progress_dialog.wasCanceled())
       {
-        series[col]->pushBack({ timestamp, row_values[col] });
+        break;
       }
     }
   }
+
   return true;
 }
 
