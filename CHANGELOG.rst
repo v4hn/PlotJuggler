@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.11.1 (2025-09-03)
+-------------------
 * Update windows.yaml
 * Update ubuntu.yaml
 * git pushMerge branch 'main' of github.com:facontidavide/PlotJuggler
