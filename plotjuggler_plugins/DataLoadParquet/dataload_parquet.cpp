@@ -9,7 +9,6 @@
 #include <QInputDialog>
 #include <QListWidget>
 #include <cmath>
-#include <fmt/format.h>
 
 DataLoadParquet::DataLoadParquet()
 {
