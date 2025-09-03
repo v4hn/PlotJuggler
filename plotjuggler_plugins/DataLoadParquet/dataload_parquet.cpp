@@ -9,6 +9,7 @@
 #include <QInputDialog>
 #include <QListWidget>
 #include <cmath>
+#include <fmt/format.h>
 
 DataLoadParquet::DataLoadParquet()
 {
@@ -57,60 +58,116 @@ const std::vector<const char*>& DataLoadParquet::compatibleFileExtensions() cons
   return extensions;
 }
 
-template <typename T>
-double get_numeric_value(parquet::StreamReader& os)
+template <typename ArrowType>
+double get_arrow_value(const std::shared_ptr<arrow::Array>& array, int64_t index)
 {
-  parquet::StreamReader::optional<T> tmp;
-  os >> tmp;
-  return tmp ? static_cast<double>(*tmp) : std::numeric_limits<double>::quiet_NaN();
+  auto typed_array = std::static_pointer_cast<ArrowType>(array);
+  if (typed_array->IsNull(index))
+  {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  return static_cast<double>(typed_array->Value(index));
+}
+
+double get_arrow_value(const std::shared_ptr<arrow::Array>& array, int64_t index,
+                       arrow::Type::type arrow_type)
+{
+  switch (arrow_type)
+  {
+    case arrow::Type::INT8:
+      return get_arrow_value<arrow::Int8Array>(array, index);
+    case arrow::Type::INT16:
+      return get_arrow_value<arrow::Int16Array>(array, index);
+    case arrow::Type::INT32:
+      return get_arrow_value<arrow::Int32Array>(array, index);
+    case arrow::Type::INT64:
+      return get_arrow_value<arrow::Int64Array>(array, index);
+    case arrow::Type::UINT8:
+      return get_arrow_value<arrow::UInt8Array>(array, index);
+    case arrow::Type::UINT16:
+      return get_arrow_value<arrow::UInt16Array>(array, index);
+    case arrow::Type::UINT32:
+      return get_arrow_value<arrow::UInt32Array>(array, index);
+    case arrow::Type::UINT64:
+      return get_arrow_value<arrow::UInt64Array>(array, index);
+    case arrow::Type::FLOAT:
+      return get_arrow_value<arrow::FloatArray>(array, index);
+    case arrow::Type::DOUBLE:
+      return get_arrow_value<arrow::DoubleArray>(array, index);
+    default:
+      break;
+  }
+  return std::numeric_limits<double>::quiet_NaN();
 }
 
 bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
 {
-  using parquet::ConvertedType;
-  using parquet::Type;
-
-  parquet_reader_ = parquet::ParquetFileReader::OpenFile(info->filename.toStdString());
-
-  if (!parquet_reader_)
+  // Open the file using Arrow IO
+  std::shared_ptr<arrow::io::ReadableFile> infile;
+  auto result = arrow::io::ReadableFile::Open(info->filename.toStdString());
+  if (!result.ok())
   {
     return false;
   }
+  infile = result.ValueOrDie();
 
-  std::shared_ptr<parquet::FileMetaData> file_metadata = parquet_reader_->metadata();
+  // Create Arrow FileReader
+  auto arrow_reader_result = parquet::arrow::OpenFile(infile, arrow::default_memory_pool());
+  if (!arrow_reader_result.ok())
+  {
+    throw std::runtime_error("Failed to open Parquet file");
+  }
+  std::unique_ptr<parquet::arrow::FileReader> arrow_file_reader =
+      std::move(arrow_reader_result.ValueOrDie());
+
+  // Get metadata
+  std::shared_ptr<parquet::FileMetaData> file_metadata =
+      arrow_file_reader->parquet_reader()->metadata();
   const auto schema = file_metadata->schema();
-  const size_t num_columns = file_metadata->num_columns();
+  const int64_t total_rows = file_metadata->num_rows();
 
   struct ColumnInfo
   {
     std::string name;
-    parquet::Type::type column_type;
-    parquet::ConvertedType::type converted_column_type;
-    bool is_valid;
+    arrow::Type::type arrow_type;
     PlotData* plot_data = nullptr;
+    size_t column_index = 0;
   };
 
-  std::vector<ColumnInfo> columns_info(num_columns);
-
-  for (size_t col = 0; col < num_columns; col++)
+  // Get Arrow schema
+  std::shared_ptr<arrow::Schema> arrow_schema;
+  auto status = arrow_file_reader->GetSchema(&arrow_schema);
+  if (!status.ok())
   {
-    const auto column = schema->Column(col);
+    throw std::runtime_error("Failed to get Arrow schema");
+  }
+
+  std::vector<ColumnInfo> columns_info;
+
+  for (size_t col = 0; col < file_metadata->num_columns(); col++)
+  {
+    const auto field = arrow_schema->field(col);
     ColumnInfo info;
-    info.name = column->name();
-    info.column_type = column->physical_type();
-    info.converted_column_type = column->converted_type();
+    info.name = field->name();
+    info.arrow_type = field->type()->id();
+    info.column_index = col;
 
-    info.is_valid = (info.column_type == Type::BOOLEAN || info.column_type == Type::INT32 ||
-                     info.column_type == Type::INT64 || info.column_type == Type::FLOAT ||
-                     info.column_type == Type::DOUBLE);
+    // Check if this is a numeric type we can handle
+    const bool is_valid =
+        (info.arrow_type == arrow::Type::BOOL || info.arrow_type == arrow::Type::INT8 ||
+         info.arrow_type == arrow::Type::INT16 || info.arrow_type == arrow::Type::INT32 ||
+         info.arrow_type == arrow::Type::INT64 || info.arrow_type == arrow::Type::UINT8 ||
+         info.arrow_type == arrow::Type::UINT16 || info.arrow_type == arrow::Type::UINT32 ||
+         info.arrow_type == arrow::Type::UINT64 || info.arrow_type == arrow::Type::FLOAT ||
+         info.arrow_type == arrow::Type::DOUBLE);
 
-    if (info.is_valid)
+    if (is_valid)
     {
       info.plot_data = &plot_data.getOrCreateNumeric(info.name, nullptr);
+      columns_info.push_back(info);
     }
 
-    columns_info[col] = info;
-    ui->listWidgetSeries->addItem(QString::fromStdString(column->name()));
+    ui->listWidgetSeries->addItem(QString::fromStdString(info.name));
   }
 
   {
@@ -157,11 +214,11 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
   // Time to parse
   int timestamp_column = -1;
 
-  for (size_t col = 0; col < num_columns; col++)
+  for (const auto& info : columns_info)
   {
-    if (columns_info[col].name == selected_stamp.toStdString())
+    if (info.name == selected_stamp.toStdString())
     {
-      timestamp_column = col;
+      timestamp_column = info.column_index;
       break;
     }
   }
@@ -170,126 +227,76 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
   progress_dialog.setWindowTitle("Loading the Parquet file");
   progress_dialog.setLabelText("Loading... please wait");
   progress_dialog.setWindowModality(Qt::ApplicationModal);
-  progress_dialog.setRange(0, parquet_reader_->metadata()->num_rows());
+  progress_dialog.setRange(0, columns_info.size());
   progress_dialog.setAutoClose(true);
   progress_dialog.setAutoReset(true);
   progress_dialog.show();
 
-  parquet::StreamReader os{ std::move(parquet_reader_) };
-
-  constexpr auto NaN = std::numeric_limits<double>::quiet_NaN();
-  std::vector<double> row_values(num_columns, NaN);
-
-  int row = 0;
-
-  while (!os.eof())
+  // Create RecordBatchReader for efficient batch processing
+  std::shared_ptr<arrow::RecordBatchReader> batch_reader;
+  status = arrow_file_reader->GetRecordBatchReader(&batch_reader);
+  if (!status.ok())
   {
-    // extract an entire row
-    for (size_t col = 0; col < num_columns; col++)
+    throw std::runtime_error("Failed to create RecordBatchReader");
+  }
+
+  int64_t rows_processed = 0;
+
+  // Process data in batches
+  std::shared_ptr<arrow::RecordBatch> batch;
+  while (batch_reader->ReadNext(&batch).ok() && batch)
+  {
+    const int64_t batch_rows = batch->num_rows();
+
+    std::vector<std::pair<double, size_t>> timestamp_to_row_index(batch_rows);
+
+    if (timestamp_column >= 0)
     {
-      const auto& info = columns_info[col];
-      if (!info.is_valid)
+      auto timestamp_array = batch->column(timestamp_column);
+      for (int64_t row = 0; row < batch_rows; row++)
       {
-        os.SkipColumns(1);
-        continue;
-      }
-
-      switch (info.column_type)
-      {
-        case Type::BOOLEAN: {
-          row_values[col] = get_numeric_value<bool>(os);
-          break;
-        }
-        case Type::INT32:
-        case Type::INT64: {
-          switch (info.converted_column_type)
-          {
-            case ConvertedType::INT_8: {
-              row_values[col] = get_numeric_value<int8_t>(os);
-              break;
-            }
-            case ConvertedType::INT_16: {
-              row_values[col] = get_numeric_value<int16_t>(os);
-              break;
-            }
-            case ConvertedType::INT_32: {
-              row_values[col] = get_numeric_value<int32_t>(os);
-              break;
-            }
-            case ConvertedType::INT_64: {
-              row_values[col] = get_numeric_value<int64_t>(os);
-              break;
-            }
-            case ConvertedType::UINT_8: {
-              row_values[col] = get_numeric_value<uint8_t>(os);
-              break;
-            }
-            case ConvertedType::UINT_16: {
-              row_values[col] = get_numeric_value<uint16_t>(os);
-              break;
-            }
-            case ConvertedType::UINT_32: {
-              row_values[col] = get_numeric_value<uint32_t>(os);
-              break;
-            }
-            case ConvertedType::UINT_64: {
-              row_values[col] = get_numeric_value<uint64_t>(os);
-              break;
-            }
-            default: {
-              // Fallback in case no converted type is provided
-              switch (info.column_type)
-              {
-                case Type::INT32: {
-                  row_values[col] = get_numeric_value<int32_t>(os);
-                  break;
-                }
-                case Type::INT64: {
-                  row_values[col] = get_numeric_value<int64_t>(os);
-                  break;
-                }
-              }
-            }
-          }
-          break;
-        }
-        case Type::FLOAT: {
-          row_values[col] = get_numeric_value<float>(os);
-          break;
-        }
-        case Type::DOUBLE: {
-          row_values[col] = get_numeric_value<double>(os);
-          break;
-        }
-        default: {
-        }
-      }  // end switch
-    }    // end for column
-
-    os >> parquet::EndRow;
-
-    double timestamp = timestamp_column >= 0 ? row_values[timestamp_column] : row;
-    row++;
-
-    for (size_t col = 0; col < num_columns; col++)
-    {
-      auto& info = columns_info[col];
-      const auto& value = row_values[col];
-      if (info.is_valid && !std::isnan(value))
-      {
-        info.plot_data->pushBack({ timestamp, value });
+        const auto ts =
+            get_arrow_value(timestamp_array, row, columns_info[timestamp_column].arrow_type);
+        timestamp_to_row_index[row] = { ts, row };
       }
     }
+    // order the timestamps for correct insertion
+    std::sort(timestamp_to_row_index.begin(), timestamp_to_row_index.end(),
+              [](const auto& a, const auto& b) { return a.first < b.first; });
 
-    if (row % 100 == 0)
+    int column = 0;
+
+    for (const auto& info : columns_info)
     {
-      progress_dialog.setValue(row);
-      QApplication::processEvents();
-      if (progress_dialog.wasCanceled())
+      const auto values_array = batch->column(info.column_index);
+
+      for (int64_t row = 0; row < batch_rows; row++)
       {
-        break;
+        size_t ordered_row = row;
+        double timestamp = static_cast<double>(rows_processed + row);
+        if (timestamp_column >= 0)
+        {
+          timestamp = timestamp_to_row_index[row].first;
+          ordered_row = timestamp_to_row_index[row].second;
+        }
+        double value = get_arrow_value(values_array, ordered_row, info.arrow_type);
+        if (!std::isnan(value))
+        {
+          info.plot_data->pushBack({ timestamp, value });
+        }
+      }
+
+      if (column++ % 10 == 0)
+      {
+        progress_dialog.setValue(column);
+        QApplication::processEvents();
+        if (progress_dialog.wasCanceled())
+        {
+          break;
+        }
       }
     }
+    rows_processed += batch_rows;
   }
 
   return true;
