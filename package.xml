@@ -19,8 +19,9 @@
 
     <depend  condition="$ROS_VERSION == 2">ament_index_cpp</depend>
     <depend  condition="$ROS_VERSION == 2">rclcpp</depend>
-    <depend  condition="$ROS_VERSION == 2">fastcdr</depend>
-    <depend  condition="$ROS_VERSION == 2">data_tamer_cpp</depend>
+
+    <depend>fastcdr</depend>
+    <depend>data_tamer_cpp</depend>
 
     <!-- Qt dependencies -->
     <depend>qtbase5-dev</depend>
