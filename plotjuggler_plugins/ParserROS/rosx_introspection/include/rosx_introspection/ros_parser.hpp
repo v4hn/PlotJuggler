@@ -26,10 +26,10 @@
 
 #include "rosx_introspection/stringtree_leaf.hpp"
 #include "rosx_introspection/deserializer.hpp"
+#include "rosx_introspection/serializer.hpp"
 
 namespace RosMsgParser
 {
-
 struct FlatMessage
 {
   std::shared_ptr<MessageSchema> schema;
@@ -60,7 +60,8 @@ public:
    *                       - rosbag::MessageInstance::getMessageDefinition()
    *                       - ros::message_traits::Definition< __your_type__ >::value()
    * */
-  Parser(const std::string& topic_name, const ROSType& msg_type, const std::string& definition);
+  Parser(const std::string& topic_name, const ROSType& msg_type,
+         const std::string& definition);
 
   enum MaxArrayPolicy : bool
   {
@@ -141,6 +142,16 @@ public:
   bool deserialize(Span<const uint8_t> buffer, FlatMessage* flat_output,
                    Deserializer* deserializer) const;
 
+#ifdef ROSX_JSON_PARSER
+
+  bool deserializeIntoJson(Span<const uint8_t> buffer, std::string* json_txt,
+                           Deserializer* deserializer, int indent = 0,
+                           bool ignore_constants = false) const;
+
+  bool serializeFromJson(const std::string_view json_string,
+                         Serializer* serializer) const;
+#endif
+
   typedef std::function<void(const ROSType&, Span<uint8_t>&)> VisitingCallback;
 
   /**
@@ -185,6 +196,8 @@ private:
   std::unique_ptr<Deserializer> _deserializer;
 };
 
+//--------------------------------------------------------------------------
+
 typedef std::vector<std::pair<std::string, double>> RenamedValues;
 
 template <class DeserializerT>
@@ -217,7 +230,8 @@ public:
     return nullptr;
   }
 
-  const FlatMessage* deserialize(const std::string& topic_name, Span<const uint8_t> buffer)
+  const FlatMessage* deserialize(const std::string& topic_name,
+                                 Span<const uint8_t> buffer)
   {
     auto it = _pack.find(topic_name);
     if (it != _pack.end())

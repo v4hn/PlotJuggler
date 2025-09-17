@@ -147,7 +147,8 @@ ROSField::ROSField(const std::string& definition) : _is_array(false), _array_siz
   _value = value;
 }
 
-std::shared_ptr<ROSMessage> ROSField::getMessagePtr(const RosMessageLibrary& library) const
+std::shared_ptr<ROSMessage>
+ROSField::getMessagePtr(const RosMessageLibrary& library) const
 {
   if (_type.typeID() != BuiltinType::OTHER)
   {
@@ -169,15 +170,16 @@ std::shared_ptr<ROSMessage> ROSField::getMessagePtr(const RosMessageLibrary& lib
 
 void TrimStringLeft(std::string& s)
 {
-  s.erase(s.begin(),
-          std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                  [](unsigned char ch) { return !std::isspace(ch); }));
 }
 
 void TrimStringRight(std::string& s)
 {
-  s.erase(
-      std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(),
-      s.end());
+  s.erase(std::find_if(s.rbegin(), s.rend(),
+                       [](unsigned char ch) { return !std::isspace(ch); })
+              .base(),
+          s.end());
 }
 
 void TrimString(std::string& s)

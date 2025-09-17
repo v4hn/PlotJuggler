@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(
   plotjuggler
   LANGUAGES C CXX
-  VERSION 3.11.1)
+  VERSION 3.12.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -163,9 +163,6 @@ find_or_download_json()
 
 include(cmake/find_or_download_fmt.cmake)
 find_or_download_fmt()
-
-include(cmake/find_or_download_fastcdr.cmake)
-find_or_download_fastcdr()
 
 add_subdirectory(3rdparty/qwt/src)
 add_subdirectory(3rdparty/QCodeEditor)

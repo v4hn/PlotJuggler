@@ -146,7 +146,8 @@ inline Variant::Variant(const T& value) : _type(OTHER)
 {
   static_assert(std::numeric_limits<T>::is_specialized ||
                     std::is_same<T, RosMsgParser::Time>::value ||
-                    std::is_same<T, std::string_view>::value || std::is_same<T, std::string>::value,
+                    std::is_same<T, std::string_view>::value ||
+                    std::is_same<T, std::string>::value,
                 "not a valid type");
 
   _storage.raw_string = (nullptr);
@@ -327,7 +328,8 @@ inline DST Variant::convert() const
     break;
 
     default:
-      throw TypeException("Variant::convert -> cannot convert type" + std::to_string(_type));
+      throw TypeException("Variant::convert -> cannot convert type" +
+                          std::to_string(_type));
       break;
   }
   return target;
@@ -364,13 +366,16 @@ inline double Variant::convert() const
       break;
 
     case UINT16:
-      convert_impl<uint16_t, double>(*reinterpret_cast<const uint16_t*>(raw_data), target);
+      convert_impl<uint16_t, double>(*reinterpret_cast<const uint16_t*>(raw_data),
+                                     target);
       break;
     case UINT32:
-      convert_impl<uint32_t, double>(*reinterpret_cast<const uint32_t*>(raw_data), target);
+      convert_impl<uint32_t, double>(*reinterpret_cast<const uint32_t*>(raw_data),
+                                     target);
       break;
     case UINT64:
-      convert_impl<uint64_t, double>(*reinterpret_cast<const uint64_t*>(raw_data), target);
+      convert_impl<uint64_t, double>(*reinterpret_cast<const uint64_t*>(raw_data),
+                                     target);
       break;
 
     case FLOAT32:
@@ -392,7 +397,8 @@ inline double Variant::convert() const
     break;
 
     default:
-      throw TypeException("Variant::convert -> cannot convert type" + std::to_string(_type));
+      throw TypeException("Variant::convert -> cannot convert type" +
+                          std::to_string(_type));
   }
   return target;
 }

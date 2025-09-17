@@ -158,8 +158,8 @@ private:
 //-----------------------------------------
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream& os,
-                                const std::pair<const TreeNode<T>*, const TreeNode<T>*>& tail_head)
+inline std::ostream& operator<<(
+    std::ostream& os, const std::pair<const TreeNode<T>*, const TreeNode<T>*>& tail_head)
 {
   const TreeNode<T>* tail = tail_head.first;
   const TreeNode<T>* head = tail_head.second;
@@ -193,7 +193,8 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 
 template <typename T>
-inline void Tree<T>::print_impl(std::ostream& os, const TreeNode<T>* node, int indent) const
+inline void Tree<T>::print_impl(std::ostream& os, const TreeNode<T>* node,
+                                int indent) const
 {
   for (int i = 0; i < indent; i++)
     os << " ";
@@ -221,7 +222,8 @@ inline TreeNode<T>* TreeNode<T>::addChild(const T& value)
 
 template <typename T>
 template <typename Vect>
-inline const TreeNode<T>* Tree<T>::find(const Vect& concatenated_values, bool partial_allowed)
+inline const TreeNode<T>* Tree<T>::find(const Vect& concatenated_values,
+                                        bool partial_allowed)
 {
   TreeNode<T>* node = &_root;
 

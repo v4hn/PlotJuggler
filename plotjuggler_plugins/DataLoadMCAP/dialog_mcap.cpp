@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QElapsedTimer>
 
+#define MCAP_IMPLEMENTATION
 #include <mcap/reader.hpp>
 
 const QString DialogMCAP::prefix = "DialogLoadMCAP::";

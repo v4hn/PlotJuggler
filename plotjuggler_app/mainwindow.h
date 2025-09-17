@@ -289,6 +289,10 @@ private slots:
 
   void on_buttonCloseStatus_clicked();
 
+  void on_buttonReferencePoint_toggled(bool checked);
+
+  void on_buttonShowpoint_toggled(bool checked);
+
 private:
   QStringList readAllCurvesFromXML(QDomElement root_node);
   void loadAllPlugins(QStringList command_line_plugin_folders);

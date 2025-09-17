@@ -2,6 +2,18 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rosx_introspection updated
+* fix minimum cmake
+* formatting
+* giving up on MCAP
+* new reference bar
+* Merge pull request `#1164 <https://github.com/facontidavide/PlotJuggler/issues/1164>`_ from matthew-t-watson/main
+  Fix atan bug in lua `quat_to_yaw` and `quat_to_roll` conversions for lua versions <5.3
+* Fix atan bug in quat_to_x conversions
+* Contributors: Davide Faconti, Matthew T. Watson
+
 3.11.1 (2025-09-03)
 -------------------
 * Update windows.yaml
