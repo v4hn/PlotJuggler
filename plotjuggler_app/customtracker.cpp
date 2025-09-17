@@ -149,6 +149,9 @@ void CurveTracker::setPosition(const QPointF& tracker_position)
     _marker[i]->setValue(point);
     if (rect.contains(point) && _visible)
     {
+      min_Y = std::min(min_Y, point.y());
+      max_Y = std::max(max_Y, point.y());
+
       visible_points++;
       double value = point.y();
       LineParts parts;
