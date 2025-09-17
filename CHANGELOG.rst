@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.12.0 (2025-09-17)
+-------------------
 * rosx_introspection updated
 * fix minimum cmake
 * formatting
